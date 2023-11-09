@@ -8,9 +8,48 @@ import inputcheck
 import draftpool
 
 
-def gatherPlayers(jf):
+def gatherPlayers(jf, type):
 	with open(jf) as fp:
 		players = json.load(fp)
+	if type == "H":
+		for record in players:
+			record["G"] = int(record["G"])
+			record["AB"] = int(record["AB"])
+			record["R"] = int(record["R"])
+			record["H"] = int(record["H"])
+			record["2B"] = int(record["2B"])
+			record["3B"] = int(record["3B"])
+			record["HR"] = int(record["HR"])
+			record["RBI"] = int(record["RBI"])
+			record["BB"] = int(record["BB"])
+			record["K"] = int(record["K"])
+			record["HB"] = int(record["HB"])
+			record["SB"] = int(record["SB"])
+			record["CS"] = int(record["CS"])
+			record["Avg"] = float(record["Avg"])
+			record["OBP"] = float(record["OBP"])
+			record["SLG"] = float(record["SLG"])
+			record["Price"] = int(record["Price"])
+	else:
+		for record in players:
+			record["G"] = int(record["G"])
+			record["GS"] = int(record["GS"])
+			record["CG"] = int(record["CG"])
+			record["SHO"] = int(record["SHO"])
+			record["W"] = int(record["W"])
+			record["L"] = int(record["L"])
+			record["SV"] = int(record["SV"])
+			record["IP"] = float(record["IP"])
+			record["H"] = int(record["H"])
+			record["ER"] = int(record["ER"])
+			record["HR"] = int(record["HR"])
+			record["BB"] = int(record["BB"])
+			record["K"] = int(record["K"])
+			record["WP"] = int(record["WP"])
+			record["BK"] = int(record["BK"])
+			record["ERA"] = float(record["ERA"])
+			record["WHIP"] = float(record["WHIP"])
+			record["Price"] = int(record["Price"])
 	return players
 	
 def setUpTeams(numteams, randomDraft, humannum):
@@ -29,7 +68,6 @@ def setUpTeams(numteams, randomDraft, humannum):
     for team in league:
         # TeamID
         team["TeamID"] = counter
-        #CHECK ON THIS.  OUT OF RANGE.  MAYBE DO A TRY/EXCEPT?
         if humannum > 0: 
         	team["TeamName"] = input(f"Human Team {team['TeamID']}: What do you want for the team name? ")
         	team["Human"] = True
@@ -48,17 +86,29 @@ def setUpTeams(numteams, randomDraft, humannum):
         	teamnameary.append(team["TeamName"])
         while not team["TeamName"]:
             team["TeamName"] = input(f"Try again - Team {team['TeamID']}: What do you want for the team name? ")
-        team["DraftSlot"] = counter
         # Draft Slot
+        # If a random draft order was selected, take the next slot in the array and assign it as the draft slot.  Regardless if it's AI or Human
+        # randomDraftOrder is taken from the optionSetRandomDraft function.  draftCounter parses through the array record by record.
         if randomDraft:
         	team["DraftSlot"] = randomDraftOrder[draftCounter]
-        if not randomDraft:
+        # If a random draft order is not selected, proceed by assigning Team 1 - Draft Slot 1.  Team 2 - Draft Slot 2.  And so on.
+        else:
+        # However, if a Human has selected a draft slot, assign their Team 1 team to the draft slot they wanted.
+        # Human players are assigned for the first human team as Team 1, second human team as Team 2, and so on.  So we can use the draftCounter to parse through and assign the humans first.
+        # setHumanDraft Slot is taken from the optionSetDraftPosition function 
         	if team["Human"]:
         		team["DraftSlot"] = setHumanDraftSlot[draftCounter]
+        # If this team is an AI team in a draft that has a distinct order, still assign the Team 1 - Draft Slot 1 unless a human team comes up.
         	else:
-        		while aiSequenceSlot in setHumanDraftSlot:
+        		# aiSequenceSlot acts as a draft counter for just AI teams.  So in this first if statement, I'm asking if any human selected the current aiSequenceSlot number.  Example, in an 8 team draft, a human wanted to select pick 3.  This if statement checks if '3' exists anywhere in the setHumanDraftSlot array.  If it doesn't, assign that number to the current AI team and add the aiSequenceSlot for the next AI team.
+        		if aiSequenceSlot not in setHumanDraftSlot:
+        			team["DraftSlot"] = aiSequenceSlot
+        			aiSequenceSlot += 1
+        		# If this team is an AI team and the aiSequenceSlot WAS selected by a human, they add one to the aiSequence Slot to assign that to the AI team.  Then since aiSequenceSlot for this already assigned number will be checked, add another +1 to it for the next team.
+        		else:
         			aiSequenceSlot += 1
         			team["DraftSlot"] = aiSequenceSlot
+        			aiSequenceSlot += 1
        	team["C1"] = "Unassigned"
         team["C2"] = "Unassigned"
         team["1B"] = "Unassigned"
@@ -87,8 +137,7 @@ def setUpTeams(numteams, randomDraft, humannum):
         team["UT7"] = "Unassigned"
         counter += 1
         humannum -= 1
-        draftCounter += 1
-        aiSequenceSlot += 1
+        draftCounter += 1  
     del teamnameary
     del setHumanDraftSlot	
     del randomDraftOrder
@@ -125,19 +174,26 @@ def draftOrderIncrement(slotnum, numteams, direction):
 
 def viewTeam(league, hitters, pitchers, select):
 	counter = 0
-	#select -= 1
 	idSelected = False
 	choicearray = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+	#select is the DraftSlot.  That doesn't mean it's the TeamID slot.
+	#This loop goes through League and captures the TeamID of the DraftSlot
+	#Because an array starts at 0, I'm turning record['TeamID'] into an int and subtracting by 1.
+	for record in league:
+		if record['DraftSlot'] == select:
+			print(f"{record['TeamName']} - {record['TeamID']}")
+			teamid = int(record['TeamID']) - 1	
 	#league[select]['C1']
 	print("")
-	#k = Key, v = Value
-	for k,v in league[select].items():
+	#k = Key, v = Va	
+	for k,v in league[teamid].items():
 		empty_slot = True
 		if k != "TeamID" and k != "DraftSlot" and k != "Human":
 			if k == "TeamName":
 				print(f"{v}")
 				print("-------------")
-			if "SP" in k or "RP" in k:
+				
+			if "SP" not in k and "RP" not in k:
 				for player in hitters:
 					if player['ID'] == v:
 						playerid = int(v)
@@ -145,13 +201,9 @@ def viewTeam(league, hitters, pitchers, select):
 						idSelected = True
 						empty_slot = False
 					if idSelected:
-						if player['FirstName'] == v:
-							firstName = v
-						if player['LastName'] == v:
-							lastName = v
-							idSelected = False
-							#GETTING ERROR HERE -  KeyError: 'FirstName'
-							print(f"{counter}. {k} - {firstName} {lastName}")
+						print(f"{counter}. {k} - {player['FirstName']} {player['LastName']}")
+					idSelected = False
+							
 			else:
 				for player in pitchers:
 					if player['ID'] == v:
@@ -160,13 +212,8 @@ def viewTeam(league, hitters, pitchers, select):
 						idSelected = True
 						empty_slot = False
 					if idSelected:
-						if player['FirstName'] == v:
-							firstName = v
-						if player['LastName'] == v:
-							lastName = v
-							idSelected = False
-							#GETTING ERROR HERE -  KeyError: 'FirstName'
-							print(f"{counter}. {k} - {firstName} {lastName}")
+						print(f"{counter}. {k} - {player['FirstName']} {player['LastName']}")
+					idSelected = False
 
 			if empty_slot and k != "TeamName":
 				print(f"{counter}. {k}")
@@ -177,17 +224,15 @@ def viewTeam(league, hitters, pitchers, select):
 		choice = inputcheck.inputCheck("Player is unassigned at this slot.  Try again.  Choose a player to view details.  Press 0 to go back to the Draft Menu ", 0, 27)
 	return choicearray[choice]
 	
-	
-
-#--TO DO---
 
 
-def selectPick(league, slotnum, playerid):
-	for team in league:
-		if team["DraftSlot"] == slotnum:
-			print("Do Stuff")
-			
-#--TO DO END---			
+
+
+
+
+
+
+
 
 
 
@@ -204,10 +249,9 @@ if __name__ == "__main__":
 	#Calls two functions.  gatherPitchers and gatherHitters.  Takes the string of the file location
 	#as the parameter.  The functions will extract the json data and put them into lists for use
 	#throughout this program.
-	pitchers = gatherPlayers(pitchersjsonfile)
-	hitters = gatherPlayers(hittersjsonfile)
-	time.sleep(3)
-	
+	pitchers = gatherPlayers(pitchersjsonfile, "P")
+	hitters = gatherPlayers(hittersjsonfile, "H")
+	time.sleep(3)	
 	
 	#Asks how many teams will be drafting.
 	numteams = inputcheck.inputCheck("How many teams?", 1, 30)
@@ -259,7 +303,7 @@ if __name__ == "__main__":
 				player_to_draft = 0
 				choice = optionsmenu.draftMenu()
 				if choice == 1:
-					select = draftpool.getDraftPool(hitters, pitchers, "H", "None", selected_list)
+					select = draftpool.getDraftPool(hitters, pitchers, "H", "Price", selected_list)
 					if select > 0:
 						player_to_draft = optionsmenu.playerDetails(hitters, pitchers, select, False)
 					else:
@@ -267,7 +311,7 @@ if __name__ == "__main__":
 					
 					
 				if choice == 2:
-					select = draftpool.getDraftPool(hitters, pitchers, "P", "None", selected_list)
+					select = draftpool.getDraftPool(hitters, pitchers, "P", "Price", selected_list)
 					if select > 0:
 						player_to_draft = optionsmenu.playerDetails(hitters, pitchers, select, False)
 					else:
@@ -308,6 +352,19 @@ if __name__ == "__main__":
 					else:
 						choice = 0
 
+
+				if choice == 8:
+					sortvalue = draftpool.sortListMenu()
+					
+					if sortvalue == "H" or sortvalue == "R" or sortvalue == "HHR" or sortvalue == "RBI" or sortvalue == "HBB" or sortvalue == "HK" or sortvalue == "SB" or sortvalue == "Avg" or sortvalue == "OBP" or sortvalue == "SLG":
+						select = draftpool.getDraftPool(hitters, pitchers, "H", sortvalue, selected_list)
+					else:
+						select = draftpool.getDraftPool(hitters, pitchers, "P", sortvalue, selected_list)
+						
+					if select > 0:
+						player_to_draft = optionsmenu.playerDetails(hitters, pitchers, select, False)
+					else:
+						choice = 0
 					
 				if choice == 9:
 					sys.exit()
@@ -315,14 +372,14 @@ if __name__ == "__main__":
 				if player_to_draft == 0:
 					choice = 0
 				else:
-					optionsmenu.selectPlayer(league, hitters, pitchers, player_to_draft, draftSlotNum)
+					league = optionsmenu.selectPlayer(league, hitters, pitchers, player_to_draft, draftSlotNum)
 					selected_list.append(player_to_draft)
 
 
 					
 	#When the AI Picks
 		else:
-			print("AI Pick")
+			print("")
 		
 		
 		

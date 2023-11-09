@@ -53,24 +53,20 @@ def optionSetRandomDraft(max_range):
 	
 	
 def viewOtherTeamList(league, numteams, draftSlotNum):
-    counter = 1
-    checkrange = numteams - 1
-    print("----- Team List -----")
-    for team in league:
-    	if team['DraftSlot'] != draftSlotNum:	
-	      print(f"{counter}. {team['TeamName']}")
-	      counter += 1
+	
+	teamchoice = [0]		
+	counter = 1
+	checkrange = numteams - 1
+	print("----- Team List -----")
+	for team in league:
+		if team['DraftSlot'] != draftSlotNum:	
+			print(f"{counter}. {team['TeamName']}")
+			teamchoice.append(team['DraftSlot'])
+			counter += 1
     
-    selected_team = inputcheck.inputCheck("Select a team.  Press 0 to go back to the Draft Menu ", 0, numteams)
-    '''
-    selected_team = input("Select a team.  Press 0 to go back to the Draft Menu ")
-    while not selected_team.isdigit():
-    	selected_team = input("Please select a number.  Select a team.  Press 0 to go back to the Draft Menu ")
-    selected_team = int(selected_team)
-    while selected_team > numteams and selected_team < 0:
-    	selected_team = 0
-		'''
-    return selected_team
+	selected_team = inputcheck.inputCheck("Select a team.  Press 0 to go back to the Draft Menu ", 0, numteams)
+	
+	return teamchoice[selected_team]
 
 
 def searchPlayer(hitters, pitchers, tryagain):
@@ -101,9 +97,7 @@ def searchPlayer(hitters, pitchers, tryagain):
 	else:
 		return 1
 
-    
-    
-    
+
 def playerDetails(hitters, pitchers, playerid, viewOnly):
 	playerid = str(playerid)
 	type = inputcheck.hitterOrPitcher(hitters, pitchers, playerid)
@@ -167,18 +161,146 @@ def playerDetails(hitters, pitchers, playerid, viewOnly):
 		else:
 			return 0
 
+'''
+def assignToRoster(team, playerid, playerlist, type):
+	positions = []
+	if type == "H":
+		positions.append(int(playerlist['DP1']))
+		positions.append(int(playerlist['DP2']))
+		positions.append(int(playerlist['DP3']))
+		positions.append(int(playerlist['DP4']))
+		positions.append(int(playerlist['DP5']))
+		positions.append(int(playerlist['DP6']))
+		positions.append(int(playerlist['DP7']))
+		positions.append(int(playerlist['DP8']))
+		
+		for pos in positions:
+			if pos == 2:
+				if team['C1'] == "Unassigned":
+					team['C1'] == playerid
+					return team
+				elif team['C2'] == "Unassigned":
+					team['C2'] = playerid
+					return team
+			elif pos == 3:
+				if team['1B'] == "Unassigned":
+					team['1B'] = playerid
+					return team
+			elif pos == 4:
+				if team['2B'] == "Unassigned":
+					team['2B'] = playerid
+					return team
+			elif pos == 5:
+				if team['3B'] == "Unassigned":
+					team['3B'] = playerid
+					return team
+			elif pos == 6:
+				if team['SS'] == "Unassigned":
+					team['SS'] = playerid
+					return team
+			elif pos == 7:
+				if team['LF'] == "Unassigned":
+					team['LF'] = playerid
+					return team
+			elif pos == 8:
+				if team['CF'] == "Unassigned":
+					team['CF'] = playerid
+					return team
+			elif pos == 9:
+				if team['RF'] == "Unassigned":
+					team['RF'] = playerid
+					return team
+	else:
+		positions.append(playerlist['Role'])
+		if positions[0] == "S":
+			if team['SP1'] == "Unassigned":
+				team['SP1'] = playerid
+				return team
+			elif team['SP2'] == "Unassigned":
+				team['SP2'] = playerid
+				return team
+			elif team['SP3'] == "Unassigned":
+				team['SP3'] = playerid
+				return team
+			elif team['SP4'] == "Unassigned":
+				team['SP4'] = playerid	
+				return team
+			elif team['SP5'] == "Unassigned":
+				team['SP5'] = playerid
+				return team
+		else:
+			if team['RP1'] == "Unassigned":
+				team['RP1'] = playerid
+				return team
+			elif team['RP2'] == "Unassigned":
+				team['RP2'] = playerid
+				return team
+			elif team['RP3'] == "Unassigned":
+				team['RP3'] = playerid
+				return team
+			elif team['RP4'] == "Unassigned":
+				team['RP4'] = playerid	
+				return team
+			elif team['RP5'] == "Unassigned":
+				team['RP5'] = playerid
+				return team
+	del positions				
+	return team
+'''
+
+def assignToRoster(team, playerid, playerlist, type):
+	if type == "H":
+	# Dictionary to map positions to team roster spots
+		position_map = {
+			2: ['C1', 'C2'],
+			3: ['1B'],
+			4: ['2B'],
+			5: ['3B'],
+			6: ['SS'],
+			7: ['LF'],
+			8: ['CF'],
+			9: ['RF'],
+		}
+
+		for i in range(1, 9):  # Assuming DP1 to DP8 are consecutive
+			pos = int(playerlist[f'DP{i}'])
+				for roster_spot in position_map.get(pos, []):
+					if team[roster_spot] == "Unassigned":
+						team[roster_spot] = playerid
+						return team
+		# ... previous code ...
+
+	else:
+	# Dictionary to map roles to team roster spots
+		role_map = {
+			'S': ['SP1', 'SP2', 'SP3', 'SP4', 'SP5'],
+			# Add other roles if they exist
+		}
+		
+		role = playerlist['Role']
+		for roster_spot in role_map.get(role, ['RP1', 'RP2', 'RP3', 'RP4', 'RP5']):
+			if team[roster_spot] == "Unassigned":
+				team[roster_spot] = playerid
+				return team
+
+	return team
+		
 
 def selectPlayer(league, hitters, pitchers, player_to_draft, draftSlotNum):
+	type = inputcheck.hitterOrPitcher(hitters, pitchers, player_to_draft)
 	for team in league:
 		if team['DraftSlot'] == draftSlotNum:
 			for player in hitters:
 				if player['ID'] == player_to_draft:
-    				#NEED MORE LOGIC HERE
-					team['C1'] = player_to_draft
+    			#NEED MORE LOGIC HERE
+					#team['C1'] = player_to_draft
+					team = assignToRoster(team, player_to_draft, player, "H")
 			for player in pitchers:
 				if player['ID'] == player_to_draft:
  					#NEED MORE LOGIC HERE
-					team['SP1'] = player_to_draft
+					#team['SP1'] = player_to_draft
+					team = assignToRoster(team, player_to_draft, player, "P")
+	return league
 
 
 
