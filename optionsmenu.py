@@ -161,92 +161,6 @@ def playerDetails(hitters, pitchers, playerid, viewOnly):
 		else:
 			return 0
 
-'''
-def assignToRoster(team, playerid, playerlist, type):
-	positions = []
-	if type == "H":
-		positions.append(int(playerlist['DP1']))
-		positions.append(int(playerlist['DP2']))
-		positions.append(int(playerlist['DP3']))
-		positions.append(int(playerlist['DP4']))
-		positions.append(int(playerlist['DP5']))
-		positions.append(int(playerlist['DP6']))
-		positions.append(int(playerlist['DP7']))
-		positions.append(int(playerlist['DP8']))
-		
-		for pos in positions:
-			if pos == 2:
-				if team['C1'] == "Unassigned":
-					team['C1'] == playerid
-					return team
-				elif team['C2'] == "Unassigned":
-					team['C2'] = playerid
-					return team
-			elif pos == 3:
-				if team['1B'] == "Unassigned":
-					team['1B'] = playerid
-					return team
-			elif pos == 4:
-				if team['2B'] == "Unassigned":
-					team['2B'] = playerid
-					return team
-			elif pos == 5:
-				if team['3B'] == "Unassigned":
-					team['3B'] = playerid
-					return team
-			elif pos == 6:
-				if team['SS'] == "Unassigned":
-					team['SS'] = playerid
-					return team
-			elif pos == 7:
-				if team['LF'] == "Unassigned":
-					team['LF'] = playerid
-					return team
-			elif pos == 8:
-				if team['CF'] == "Unassigned":
-					team['CF'] = playerid
-					return team
-			elif pos == 9:
-				if team['RF'] == "Unassigned":
-					team['RF'] = playerid
-					return team
-	else:
-		positions.append(playerlist['Role'])
-		if positions[0] == "S":
-			if team['SP1'] == "Unassigned":
-				team['SP1'] = playerid
-				return team
-			elif team['SP2'] == "Unassigned":
-				team['SP2'] = playerid
-				return team
-			elif team['SP3'] == "Unassigned":
-				team['SP3'] = playerid
-				return team
-			elif team['SP4'] == "Unassigned":
-				team['SP4'] = playerid	
-				return team
-			elif team['SP5'] == "Unassigned":
-				team['SP5'] = playerid
-				return team
-		else:
-			if team['RP1'] == "Unassigned":
-				team['RP1'] = playerid
-				return team
-			elif team['RP2'] == "Unassigned":
-				team['RP2'] = playerid
-				return team
-			elif team['RP3'] == "Unassigned":
-				team['RP3'] = playerid
-				return team
-			elif team['RP4'] == "Unassigned":
-				team['RP4'] = playerid	
-				return team
-			elif team['RP5'] == "Unassigned":
-				team['RP5'] = playerid
-				return team
-	del positions				
-	return team
-'''
 
 def assignToRoster(team, playerid, playerlist, type):
 	if type == "H":
@@ -262,23 +176,31 @@ def assignToRoster(team, playerid, playerlist, type):
 			9: ['RF'],
 		}
 
-		for i in range(1, 9):  # Assuming DP1 to DP8 are consecutive
+		#Go through individual player's DP listings.  DP1 - DP8.
+		#Check and see what is assigned at DP1, DP2, and so on.
+		for i in range(1, 9):  # Assuming DP1 to DP8 are consecutive.
+			#Looping through, assigning pos to DP1, then loop to DP2, then loop to DP3
 			pos = int(playerlist[f'DP{i}'])
-				for roster_spot in position_map.get(pos, []):
-					if team[roster_spot] == "Unassigned":
-						team[roster_spot] = playerid
-						return team
+			#Using the self made position_map above, grab the value depending on the pos (which is the key)
+			#roster_spot is now the value (C1, 2B, LF) of position_map[2] and [4] and [7].
+			#Use that value as the key for team.
+			for roster_spot in position_map.get(pos):
+				if team[roster_spot] == "Unassigned":
+					team[roster_spot] = playerid
+					return team
 		# ... previous code ...
 
 	else:
 	# Dictionary to map roles to team roster spots
 		role_map = {
 			'S': ['SP1', 'SP2', 'SP3', 'SP4', 'SP5'],
-			# Add other roles if they exist
+			'R': ['RP1', 'RP2', 'RP3', 'RP4', 'RP5'],
 		}
 		
 		role = playerlist['Role']
-		for roster_spot in role_map.get(role, ['RP1', 'RP2', 'RP3', 'RP4', 'RP5']):
+		# role is 'S' or 'R', depending on the pitcher array.
+		# get will take the key value (role, associated with role_map).
+		for roster_spot in role_map.get(role):
 			if team[roster_spot] == "Unassigned":
 				team[roster_spot] = playerid
 				return team
