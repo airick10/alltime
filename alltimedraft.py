@@ -6,6 +6,7 @@ import time
 import optionsmenu
 import inputcheck
 import draftpool
+import aipicks
 
 
 def gatherPlayers(jf, type):
@@ -98,8 +99,11 @@ def setUpTeams(numteams, randomDraft, humannum):
         # setHumanDraft Slot is taken from the optionSetDraftPosition function 
         	if team["Human"]:
         		team["DraftSlot"] = setHumanDraftSlot[draftCounter]
+        		team["AIFocus"] = 0
         # If this team is an AI team in a draft that has a distinct order, still assign the Team 1 - Draft Slot 1 unless a human team comes up.
         	else:
+        		#TO ADJUST
+        		team["AIFocus"] = aipicks.aiFocus()
         		# aiSequenceSlot acts as a draft counter for just AI teams.  So in this first if statement, I'm asking if any human selected the current aiSequenceSlot number.  Example, in an 8 team draft, a human wanted to select pick 3.  This if statement checks if '3' exists anywhere in the setHumanDraftSlot array.  If it doesn't, assign that number to the current AI team and add the aiSequenceSlot for the next AI team.
         		if aiSequenceSlot not in setHumanDraftSlot:
         			team["DraftSlot"] = aiSequenceSlot
@@ -170,8 +174,30 @@ def draftOrderIncrement(slotnum, numteams, direction):
 			return slotnum
 
 
-				
-
+def getDraftLog(league):
+	draftLog = []
+	draftOrder = []
+	rdCounter = 1
+	counter = 0
+	snakeSide = True
+	for team in league:
+		draftOrder.append(team['DraftSlot'])
+	numteams = len(draftOrder)
+	while rdCounter < 26:
+		if snakeSide:
+			while counter < numteams:
+				draftLog.append(draftOrder[counter])
+				counter += 1
+			snakeSide = False
+		else:
+			while counter >= 0:
+				counter -= 1
+				draftLog.append(draftOrder[counter])
+			snakeSide = True
+		rdCounter += 1
+	return draftLog
+		
+	
 def viewTeam(league, hitters, pitchers, select):
 	counter = 0
 	idSelected = False
@@ -224,9 +250,37 @@ def viewTeam(league, hitters, pitchers, select):
 		choice = inputcheck.inputCheck("Player is unassigned at this slot.  Try again.  Choose a player to view details.  Press 0 to go back to the Draft Menu ", 0, 27)
 	return choicearray[choice]
 	
+	
 
-
-
+def getLog(league, hitters, pitchers, team_ary, selected_ary, numteams):
+	counter = 0
+	rdCounter = 1
+	rdLabel = 1
+	print(f"---- Round {rdLabel} ----")
+	for pick in selected_ary:
+		if rdCounter > numteams: 
+			print("")
+			print(f"---- Round {rdLabel} ----")
+			rdLabel += 1
+			rdCounter = 1
+		for player in hitters:
+			if pick == player['ID']:
+				name = player['FirstName'] + " " + player['LastName']
+				position = inputcheck.posConvert(player['DP1'])
+		for player in pitchers:
+			if pick == player['ID']:
+				name = player['FirstName'] + " " + player['LastName']
+				position = inputcheck.posConvert(player['Role'])
+		for team in league:
+			if team_ary[counter] == team['DraftSlot']:
+				overallCounter = counter + 1
+				print(f"{overallCounter}. {team['TeamName']}: {position} - {name}")
+		rdCounter += 1
+		counter += 1
+	input("Press any key to go back to the draft menu")
+	return 0
+	
+	
 
 
 
@@ -255,7 +309,7 @@ if __name__ == "__main__":
 	
 	#Asks how many teams will be drafting.
 	numteams = inputcheck.inputCheck("How many teams?", 1, 30)
-	print ("Great! %s many teams will draft!" % (numteams))
+	print (f"Great! {numteams} teams will draft!")
 	
 	#Now asks for how many players are human
 	humannum = inputcheck.inputCheck("How many human players?", 0, numteams)
@@ -287,6 +341,9 @@ if __name__ == "__main__":
 	direction = "Up"
 	roundCounter = 1
 	
+	#Gathers up the teams in a draft log array carrying the team['DraftSlot'] integers in proper order.
+	draftlog = getDraftLog(league)
+	
 	while (numteams * 25) > draftcounter:
 		if (draftcounter % numteams) == 1:
 			print("")
@@ -296,8 +353,8 @@ if __name__ == "__main__":
 		humanbool = draftOrderAnnounce(league, draftSlotNum)
 		#When a Human Picks
 		if humanbool:
-			#print("Human Pick")
 			choice = 0
+			select = 0
 
 			while choice == 0:
 				player_to_draft = 0
@@ -335,6 +392,10 @@ if __name__ == "__main__":
 					else:
 						choice = 0
 				
+				if choice == 5:
+					select = getLog(league, hitters, pitchers, draftlog, selected_list, numteams)
+					choice = 0				
+			
 
 				if choice == 6:
 					select = optionsmenu.searchPlayer(hitters, pitchers, False)
@@ -365,8 +426,8 @@ if __name__ == "__main__":
 						player_to_draft = optionsmenu.playerDetails(hitters, pitchers, select, False)
 					else:
 						choice = 0
-					
-				if choice == 9:
+						
+				if choice == 10:
 					sys.exit()
 
 				if player_to_draft == 0:
@@ -379,6 +440,10 @@ if __name__ == "__main__":
 					
 	#When the AI Picks
 		else:
+			player_to_draft = aipicks.aiSelect(league, hitters, pitchers, selected_list)
+			#GET player_to_draft
+			league = optionsmenu.selectPlayer(league, hitters, pitchers, player_to_draft, draftSlotNum)
+			selected_list.append(player_to_draft)
 			print("")
 		
 		
@@ -401,22 +466,3 @@ if __name__ == "__main__":
 		else:
 			draftSlotNum = newDraftSlotNum
 		draftcounter += 1
-	
-	
-	
-	
-	
-
-		
-
-	'''
-  #LOOK AT PLAYERS---
-	print(pitchers)
-	
-	for player in hitters:
-		if 'Name' in player:
-			print(player['Name'], player['Bat'], player['Fielding'])
-		else:
-			print("")
-			xxxx
-	'''

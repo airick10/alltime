@@ -19,3 +19,29 @@ def hitterOrPitcher(hitters, pitchers, playerid):
 		if player["ID"] == playerid:
 			return "P"
 	return "X"	
+	
+	
+def posConvert(pos):
+	match pos:
+		case "2":
+			return "C"
+		case "3":
+			return "1B"
+		case "4":
+			return "2B"
+		case "5":
+			return "3B"
+		case "6":
+			return "SS"
+		case "7":
+			return "LF"
+		case "8":
+			return "CF"
+		case "9":
+			return "RF"
+		case "S":
+			return "SP"
+		case "R":
+			return "RP"
+		case _:
+			return ""

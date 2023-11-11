@@ -9,12 +9,12 @@ def draftMenu():
 	print("2. View Top Available Pitchers")
 	print("3. View Your Team")
 	print("4. View Another team")
-	print("5. View All Teams")
+	print("5. View Draft Log")
 	print("6. Search for a specific player")
 	print("7. Look for a specific list of Positions / Pitcher Roles")
 	print("8. Sort by a specific stat")
 	print("9. Exit Program")
-	choice = inputcheck.inputCheck("Select what option you want.", 1, 8)
+	choice = inputcheck.inputCheck("Select what option you want.", 1, 9)
 	'''
 	choice = input("Select what option you want")
 	while not choice.isdigit():
@@ -166,6 +166,7 @@ def assignToRoster(team, playerid, playerlist, type):
 	if type == "H":
 	# Dictionary to map positions to team roster spots
 		position_map = {
+			0: ['UT1', 'UT2', 'UT3', 'UT4', 'UT5', 'UT6', 'UT7'],
 			2: ['C1', 'C2'],
 			3: ['1B'],
 			4: ['2B'],
