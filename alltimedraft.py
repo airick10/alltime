@@ -3,6 +3,7 @@ import json
 import requests
 import sys
 import time
+import random
 import optionsmenu
 import inputcheck
 import draftpool
@@ -69,6 +70,7 @@ def setUpTeams(numteams, randomDraft, humannum):
     for team in league:
         # TeamID
         team["TeamID"] = counter
+        team["AIFocus"] = aiFocus()
         if humannum > 0: 
         	team["TeamName"] = input(f"Human Team {team['TeamID']}: What do you want for the team name? ")
         	team["Human"] = True
@@ -102,8 +104,6 @@ def setUpTeams(numteams, randomDraft, humannum):
         		team["AIFocus"] = 0
         # If this team is an AI team in a draft that has a distinct order, still assign the Team 1 - Draft Slot 1 unless a human team comes up.
         	else:
-        		#TO ADJUST
-        		team["AIFocus"] = aipicks.aiFocus()
         		# aiSequenceSlot acts as a draft counter for just AI teams.  So in this first if statement, I'm asking if any human selected the current aiSequenceSlot number.  Example, in an 8 team draft, a human wanted to select pick 3.  This if statement checks if '3' exists anywhere in the setHumanDraftSlot array.  If it doesn't, assign that number to the current AI team and add the aiSequenceSlot for the next AI team.
         		if aiSequenceSlot not in setHumanDraftSlot:
         			team["DraftSlot"] = aiSequenceSlot
@@ -280,7 +280,10 @@ def getLog(league, hitters, pitchers, team_ary, selected_ary, numteams):
 	input("Press any key to go back to the draft menu")
 	return 0
 	
-	
+def aiFocus():
+	choices = [1,2]
+	choice = random.choice(choices)
+	return choice	
 
 
 
@@ -440,7 +443,7 @@ if __name__ == "__main__":
 					
 	#When the AI Picks
 		else:
-			player_to_draft = aipicks.aiSelect(league, hitters, pitchers, selected_list)
+			player_to_draft = aipicks.aiSelect(league, hitters, pitchers, selected_list, draftSlotNum, roundCounter)
 			#GET player_to_draft
 			league = optionsmenu.selectPlayer(league, hitters, pitchers, player_to_draft, draftSlotNum)
 			selected_list.append(player_to_draft)
