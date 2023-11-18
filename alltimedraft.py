@@ -281,7 +281,7 @@ def getLog(league, hitters, pitchers, team_ary, selected_ary, numteams):
 	return 0
 	
 def aiFocus():
-	choices = [1,2]
+	choices = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
 	choice = random.choice(choices)
 	return choice	
 
@@ -311,17 +311,17 @@ if __name__ == "__main__":
 	time.sleep(3)	
 	
 	#Asks how many teams will be drafting.
-	numteams = inputcheck.inputCheck("How many teams?", 1, 30)
+	numteams = inputcheck.inputCheck("How many teams?  ", 1, 30)
 	print (f"Great! {numteams} teams will draft!")
 	
 	#Now asks for how many players are human
-	humannum = inputcheck.inputCheck("How many human players?", 0, numteams)
+	humannum = inputcheck.inputCheck("How many human players?  ", 0, numteams)
 	
 	
 	#Checks if the user wants the draft order to be random or they set it
 	setHumanDraftSlot = []
 	if humannum > 0:		
-		randomDraftCheck = input("Do you want the draft order to be random?  'Y' for yes and 'N' for no: ")
+		randomDraftCheck = input("Do you want the draft order to be random?  'Y' for yes and 'N' for no:  ")
 		print("")
 		while randomDraftCheck != "Y" and randomDraftCheck != "y" and randomDraftCheck != "N" and randomDraftCheck != "n":
 			randomDraftCheck = input("Try again, Do you want the draft order to be random?  'Y' for yes and 'N' for no: ")	
@@ -436,19 +436,27 @@ if __name__ == "__main__":
 				if player_to_draft == 0:
 					choice = 0
 				else:
-					league = optionsmenu.selectPlayer(league, hitters, pitchers, player_to_draft, draftSlotNum)
-					selected_list.append(player_to_draft)
+					selected_position = optionsmenu.selectPlayer(league, hitters, pitchers, player_to_draft, draftSlotNum)
+					if selected_position != "None":
+						league = optionsmenu.assignToRoster(league, hitters, pitchers, player_to_draft, draftSlotNum, selected_position)
+						selected_list.append(player_to_draft)
+					else:
+						choice = 0
+	
 
 
 					
 	#When the AI Picks
 		else:
-			player_to_draft = aipicks.aiSelect(league, hitters, pitchers, selected_list, draftSlotNum, roundCounter)
-			#GET player_to_draft
-			league = optionsmenu.selectPlayer(league, hitters, pitchers, player_to_draft, draftSlotNum)
-			selected_list.append(player_to_draft)
-			print("")
-		
+			aiPickSuccess = False
+			while not aiPickSuccess:
+				player_to_draft = aipicks.aiSelect(league, hitters, pitchers, selected_list, draftSlotNum, roundCounter)
+				selected_position = optionsmenu.selectPlayer(league, hitters, pitchers, player_to_draft, draftSlotNum)
+				if selected_position != "None":
+					league = optionsmenu.assignToRoster(league, hitters, pitchers, player_to_draft, draftSlotNum, selected_position)
+					selected_list.append(player_to_draft)
+					aiPickSuccess = True
+					print("")
 		
 		
 		# After Pick

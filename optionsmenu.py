@@ -156,74 +156,86 @@ def playerDetails(hitters, pitchers, playerid, viewOnly):
 	else:
 		draftConfirm = input("Do you wish to draft this player?  Type 'Y' for yes.  Press any key to go back to the Draft Menu")
 		if draftConfirm == "Y" or draftConfirm == "y":
-			print(f"{playername} has been drafted!")
+			print("")
 			return playerid
 		else:
 			return 0
 
-
-def assignToRoster(team, playerid, playerlist, type):
-	if type == "H":
-	# Dictionary to map positions to team roster spots
-		position_map = {
-			0: ['UT1', 'UT2', 'UT3', 'UT4', 'UT5', 'UT6', 'UT7'],
-			2: ['C1', 'C2'],
-			3: ['1B'],
-			4: ['2B'],
-			5: ['3B'],
-			6: ['SS'],
-			7: ['LF'],
-			8: ['CF'],
-			9: ['RF'],
-		}
-
-		#Go through individual player's DP listings.  DP1 - DP8.
-		#Check and see what is assigned at DP1, DP2, and so on.
-		for i in range(1, 9):  # Assuming DP1 to DP8 are consecutive.
-			#Looping through, assigning pos to DP1, then loop to DP2, then loop to DP3
-			pos = int(playerlist[f'DP{i}'])
-			#Using the self made position_map above, grab the value depending on the pos (which is the key)
-			#roster_spot is now the value (C1, 2B, LF) of position_map[2] and [4] and [7].
-			#Use that value as the key for team.
-			for roster_spot in position_map.get(pos):
-				if team[roster_spot] == "Unassigned":
-					team[roster_spot] = playerid
-					return team
-		# ... previous code ...
-
-	else:
-	# Dictionary to map roles to team roster spots
-		role_map = {
-			'S': ['SP1', 'SP2', 'SP3', 'SP4', 'SP5'],
-			'R': ['RP1', 'RP2', 'RP3', 'RP4', 'RP5'],
-		}
-		
-		role = playerlist['Role']
-		# role is 'S' or 'R', depending on the pitcher array.
-		# get will take the key value (role, associated with role_map).
-		for roster_spot in role_map.get(role):
-			if team[roster_spot] == "Unassigned":
-				team[roster_spot] = playerid
-				return team
-
-	return team
-		
-
 def selectPlayer(league, hitters, pitchers, player_to_draft, draftSlotNum):
-	type = inputcheck.hitterOrPitcher(hitters, pitchers, player_to_draft)
+	position = "None"
+	player_type = inputcheck.hitterOrPitcher(hitters, pitchers, player_to_draft)
 	for team in league:
 		if team['DraftSlot'] == draftSlotNum:
-			for player in hitters:
-				if player['ID'] == player_to_draft:
-    			#NEED MORE LOGIC HERE
-					#team['C1'] = player_to_draft
-					team = assignToRoster(team, player_to_draft, player, "H")
-			for player in pitchers:
-				if player['ID'] == player_to_draft:
- 					#NEED MORE LOGIC HERE
-					#team['SP1'] = player_to_draft
-					team = assignToRoster(team, player_to_draft, player, "P")
+			if player_type == "H":
+				for player in hitters:
+					if player['ID'] == player_to_draft:
+						# Dictionary to map positions to team roster spots
+						position_map = {
+							0: ['UT1', 'UT2', 'UT3', 'UT4', 'UT5', 'UT6', 'UT7'],
+							2: ['C1', 'C2'],
+							3: ['1B'],
+							4: ['2B'],
+							5: ['3B'],
+							6: ['SS'],
+							7: ['LF'],
+							8: ['CF'],
+							9: ['RF'],
+						}
+						#Go through individual player's DP listings.  DP1 - DP8.
+						#Check and see what is assigned at DP1, DP2, and so on.
+						for i in range(1, 9):
+							#Looping through, assigning pos to DP1, then loop to DP2, then loop to DP3
+							pos = int(player[f'DP{i}'])
+							#Using the self made position_map above, grab the value depending on the pos (which is the key)
+							#roster_spot is now the value (C1, 2B, LF) of position_map[2] and [4] and [7].
+							#Use that value as the key for team.
+							for roster_spot in position_map.get(pos):
+								if team[roster_spot] == "Unassigned":
+									position = roster_spot
+									return position
+							if team['Human']:
+								print("")
+								print("No position is available to put this player on.  Please select another.")
+							else:
+								print("**AI LOG** - Position Check Failed.  Choosing another")
+			else:
+				for player in pitchers:
+					if player['ID'] == player_to_draft:
+						# Dictionary to map roles to team roster spots
+						role_map = {
+							'S': ['SP1', 'SP2', 'SP3', 'SP4', 'SP5'],
+							'R': ['RP1', 'RP2', 'RP3', 'RP4', 'RP5'],
+						}
+						
+						role = player['Role']
+						# role is 'S' or 'R', depending on the pitcher array.
+						# get will take the key value (role, associated with role_map).
+						for roster_spot in role_map.get(role):
+							if team[roster_spot] == "Unassigned":
+								position = roster_spot
+								return position
+						if team['Human']:
+							print("")
+							print("No position is available to put this player on.  Please select another.")
+						else:
+							print("**AI LOG** - Position Check Failed.  Choosing another")
+
+	return position
+
+def assignToRoster(league, hitters, pitchers, player_to_draft, draftSlotNum, position):
+	player_type = inputcheck.hitterOrPitcher(hitters, pitchers, player_to_draft)
+	for team in league:
+		if team['DraftSlot'] == draftSlotNum:
+			if player_type == "H":
+				for player in hitters:
+					if player['ID'] == player_to_draft:
+						team[position] = player_to_draft
+						pos = inputcheck.posConvert(player['DP1'])
+						print(f"{team['TeamName']} have drafted {pos} - {player['FirstName']} {player['LastName']} ")
+			else:
+				for player in pitchers:
+					if player['ID'] == player_to_draft:
+						team[position] = player_to_draft
+						pos = inputcheck.posConvert(player['Role'])
+						print(f"{team['TeamName']} have drafted {pos} - {player['FirstName']} {player['LastName']} ")
 	return league
-
-
-
