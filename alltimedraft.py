@@ -10,6 +10,14 @@ import draftpool
 import aipicks
 
 
+def clearScreen():
+    # For Windows
+    if os.name == 'nt':
+        _ = os.system('cls')
+    # For Mac and Linux (os.name: 'posix')
+    else:
+        _ = os.system('clear')
+
 def gatherPlayers(jf, type):
 	with open(jf) as fp:
 		players = json.load(fp)
@@ -63,7 +71,7 @@ def setUpTeams(numteams, randomDraft, humannum):
     if humannum > 0:
     	if not randomDraft:
     		setHumanDraftSlot = optionsmenu.optionSetDraftPosition(numteams, humannum)
-    
+
     counter = 1
     draftCounter = 0
     aiSequenceSlot = 1
@@ -174,26 +182,20 @@ def draftOrderIncrement(slotnum, numteams, direction):
 			return slotnum
 
 
-def getDraftLog(league):
+def getDraftLog(league, numteams):
 	draftLog = []
 	draftOrder = []
 	rdCounter = 1
-	counter = 0
-	snakeSide = True
-	for team in league:
-		draftOrder.append(team['DraftSlot'])
-	numteams = len(draftOrder)
+	for i in range(numteams + 1):
+		for team in league:
+			if i == team['DraftSlot']:
+				draftOrder.append(team['TeamName'])
+		#draftOrder.append(team['DraftSlot'])
 	while rdCounter < 26:
-		if snakeSide:
-			while counter < numteams:
-				draftLog.append(draftOrder[counter])
-				counter += 1
-			snakeSide = False
-		else:
-			while counter >= 0:
-				counter -= 1
-				draftLog.append(draftOrder[counter])
-			snakeSide = True
+		for i in range(numteams):
+			draftLog.append(draftOrder[i])
+		for i in range(numteams - 1, -1, -1):
+			draftLog.append(draftOrder[i])
 		rdCounter += 1
 	return draftLog
 		
@@ -256,12 +258,13 @@ def getLog(league, hitters, pitchers, team_ary, selected_ary, numteams):
 	counter = 0
 	rdCounter = 1
 	rdLabel = 1
+	overallCounter = 0
 	print(f"---- Round {rdLabel} ----")
 	for pick in selected_ary:
-		if rdCounter > numteams: 
+		if rdCounter > numteams:
 			print("")
-			print(f"---- Round {rdLabel} ----")
 			rdLabel += 1
+			print(f"---- Round {rdLabel} ----")
 			rdCounter = 1
 		for player in hitters:
 			if pick == player['ID']:
@@ -271,15 +274,14 @@ def getLog(league, hitters, pitchers, team_ary, selected_ary, numteams):
 			if pick == player['ID']:
 				name = player['FirstName'] + " " + player['LastName']
 				position = inputcheck.posConvert(player['Role'])
-		for team in league:
-			if team_ary[counter] == team['DraftSlot']:
-				overallCounter = counter + 1
-				print(f"{overallCounter}. {team['TeamName']}: {position} - {name}")
+		print(f"{overallCounter + 1}. {team_ary[overallCounter]}: {position} - {name}")
+		overallCounter += 1
 		rdCounter += 1
 		counter += 1
 	input("Press any key to go back to the draft menu")
 	return 0
-	
+
+
 def aiFocus():
 	choices = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
 	choice = random.choice(choices)
@@ -294,7 +296,12 @@ def aiFocus():
 
 
 
+
+
+
+
 if __name__ == "__main__":
+	clearScreen()
 	print("Welcome to the All Time Draft!  Gathering players...")
 	#Takes in the file either submitted by the user or the default.  TO DO
 	#pitchersjsonfile = "/Users/eric/Library/Mobile Documents/iCloud~com~omz-software~Pythonista3/Documents/pythonista/Alltimeapp/pitchers.json"
@@ -311,6 +318,7 @@ if __name__ == "__main__":
 	time.sleep(3)	
 	
 	#Asks how many teams will be drafting.
+	clearScreen()
 	numteams = inputcheck.inputCheck("How many teams?  ", 1, 30)
 	print (f"Great! {numteams} teams will draft!")
 	
@@ -321,7 +329,7 @@ if __name__ == "__main__":
 	#Checks if the user wants the draft order to be random or they set it
 	setHumanDraftSlot = []
 	if humannum > 0:		
-		randomDraftCheck = input("Do you want the draft order to be random?  'Y' for yes and 'N' for no:  ")
+		randomDraftCheck = input("Do you want the draft order to be random?  'Y' for yes and 'N' for no: ")
 		print("")
 		while randomDraftCheck != "Y" and randomDraftCheck != "y" and randomDraftCheck != "N" and randomDraftCheck != "n":
 			randomDraftCheck = input("Try again, Do you want the draft order to be random?  'Y' for yes and 'N' for no: ")	
@@ -345,7 +353,7 @@ if __name__ == "__main__":
 	roundCounter = 1
 	
 	#Gathers up the teams in a draft log array carrying the team['DraftSlot'] integers in proper order.
-	draftlog = getDraftLog(league)
+	draftlog = getDraftLog(league, numteams)
 	
 	while (numteams * 25) > draftcounter:
 		if (draftcounter % numteams) == 1:
@@ -362,9 +370,11 @@ if __name__ == "__main__":
 			while choice == 0:
 				player_to_draft = 0
 				choice = optionsmenu.draftMenu()
+				clearScreen()
 				if choice == 1:
 					select = draftpool.getDraftPool(hitters, pitchers, "H", "Price", selected_list)
 					if select > 0:
+						clearScreen()
 						player_to_draft = optionsmenu.playerDetails(hitters, pitchers, select, False)
 					else:
 						choice = 0
@@ -373,6 +383,7 @@ if __name__ == "__main__":
 				if choice == 2:
 					select = draftpool.getDraftPool(hitters, pitchers, "P", "Price", selected_list)
 					if select > 0:
+						clearScreen()
 						player_to_draft = optionsmenu.playerDetails(hitters, pitchers, select, False)
 					else:
 						choice = 0
@@ -381,6 +392,7 @@ if __name__ == "__main__":
 				if choice == 3:
 					select = viewTeam(league, hitters, pitchers, draftSlotNum)
 					if select > 0:
+						clearScreen()
 						select = optionsmenu.playerDetails(hitters, pitchers, select, True)
 					else:
 						choice = 0
@@ -391,11 +403,13 @@ if __name__ == "__main__":
 					if select > 0:
 						choice = viewTeam(league, hitters, pitchers, select)
 						if choice > 0:
+							clearScreen()
 							player_to_draft = optionsmenu.playerDetails(hitters, pitchers, select, True)
 					else:
 						choice = 0
 				
 				if choice == 5:
+					clearScreen()
 					select = getLog(league, hitters, pitchers, draftlog, selected_list, numteams)
 					choice = 0				
 			
@@ -405,6 +419,7 @@ if __name__ == "__main__":
 					if select == 1:
 						select = optionsmenu.searchPlayer(hitters, pitchers, True)
 					if select > 0:
+						clearScreen()
 						player_to_draft = optionsmenu.playerDetails(hitters, pitchers, select, False)
 					else:
 						choice = 0
@@ -412,6 +427,7 @@ if __name__ == "__main__":
 				if choice == 7:
 					select = draftpool.getDraftPool(hitters, pitchers, "H", "Position", selected_list)
 					if select > 0:
+						clearScreen()
 						player_to_draft = optionsmenu.playerDetails(hitters, pitchers, select, False)
 					else:
 						choice = 0
@@ -426,12 +442,13 @@ if __name__ == "__main__":
 						select = draftpool.getDraftPool(hitters, pitchers, "P", sortvalue, selected_list)
 						
 					if select > 0:
+						clearScreen()
 						player_to_draft = optionsmenu.playerDetails(hitters, pitchers, select, False)
 					else:
 						choice = 0
 						
-				if choice == 10:
-					sys.exit()
+				if choice == 9:
+					exit()
 
 				if player_to_draft == 0:
 					choice = 0
