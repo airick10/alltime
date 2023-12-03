@@ -19,14 +19,14 @@ def aiSelectSnippet(log, playerpool, selected_list, threshold, defCheck, directi
 	check_functions = {
         0: lambda player: True,
         1: lambda player: player['Role'] == "S",
-        2: lambda player: player['DP1'] == "2", 
-        3: lambda player: player['DP1'] == "3",
-        4: lambda player: player['DP1'] == "4",
-        5: lambda player: player['DP1'] == "5",
-        6: lambda player: player['DP1'] == "6",
-        7: lambda player: player['DP1'] == "7",
-        8: lambda player: player['DP1'] == "8",
-        9: lambda player: player['DP1'] == "9",
+        2: lambda player: player['DP1'] == "2" or player['DP2'] == "2" or player['DP3'] == "2", 
+        3: lambda player: player['DP1'] == "3" or player['DP2'] == "3" or player['DP3'] == "3",
+        4: lambda player: player['DP1'] == "4" or player['DP2'] == "4" or player['DP3'] == "4",
+        5: lambda player: player['DP1'] == "5" or player['DP2'] == "5" or player['DP3'] == "5",
+        6: lambda player: player['DP1'] == "6" or player['DP2'] == "6" or player['DP3'] == "6",
+        7: lambda player: player['DP1'] == "7" or player['DP2'] == "7" or player['DP3'] == "7",
+        8: lambda player: player['DP1'] == "8" or player['DP2'] == "8" or player['DP3'] == "8",
+        9: lambda player: player['DP1'] == "9" or player['DP2'] == "9" or player['DP3'] == "9",
         10: lambda player: True,
         11: lambda player: player['Role'] == "R",
         12: lambda player: player['DR1'] == "1",
@@ -50,86 +50,6 @@ def aiSelectSnippet(log, playerpool, selected_list, threshold, defCheck, directi
 
 	return None
 
-
-'''
-def aiSelectSnippet(log, playerpool, selected_list, threshold, defCheck):
-	print(log)
-	if threshold < 0:
-		for player in playerpool:
-			if player['ID'] not in selected_list:
-				if defCheck == 0:
-					return player['ID']
-				elif defCheck == 1 and player['DR1'] == "1":
-					return player['ID']
-				elif defCheck == 2 and player['Role'] == "S":
-					return player['ID']
-				elif defCheck == 3 and player['Role'] == "R":
-					return player['ID']
-				elif defCheck == 4 and (player.get('Bat', "") == "L" or player.get('Throw', "") == "L"):
-					return player['ID']
-				elif defCheck == 5 and (player['DP1'] == "2" or player['DP1'] == "4" or player['DP1'] == "6" or player['DP1'] == "8"):
-					return player['ID']
-	else:
-		counter = 0
-		for player in playerpool:
-			if player['ID'] not in selected_list:
-				if defCheck == 0:
-					if counter > threshold:
-						return player['ID']
-					else:
-						counter += 1
-				elif defCheck == 1 and player['DR1'] == "1":
-					if counter > threshold:
-						return player['ID']
-					else:
-						counter += 1
-				elif defCheck == 2 and player['Role'] == "S":
-					if counter > threshold:
-						return player['ID']
-					else:
-						counter += 1
-				elif defCheck == 3 and player['Role'] == "R":
-					if counter > threshold:
-						return player['ID']
-					else:
-						counter += 1
-				elif defCheck == 4 and (player.get('Bat', "") == "L" or player.get('Throw', "") == "L"):
-					if counter > threshold:
-						return player['ID']
-					else:
-						counter += 1
-				elif defCheck == 5 and (player['DP1'] == "2" or player['DP1'] == "4" or player['DP1'] == "6" or player['DP1'] == "8"):
-					if counter > threshold:
-						return player['ID']
-					else:
-						counter += 1
-
-def aiSelectSnippetDefense(log, playerpool, selected_list, threshold, defCheck):
-	print(log)
-	if threshold < 0:
-		for player in playerpool:
-			if player['ID'] not in selected_list:
-				if defCheck:
-					if player['DR1'] == "1":
-						return player['ID']
-				else:
-					return player['ID']
-	else:
-		counter = 0
-		for player in playerpool:
-			if player['ID'] not in selected_list:
-				if defCheck:
-					if player['DR1'] == "1":
-						if counter > threshold:
-							return player['ID']
-						else:
-							counter += 1
-				else:
-					if counter > threshold:
-						return player['ID']
-					else:
-						counter += 1
-'''
 
 def firstRounds(roll, hitters, pitchers, selected_list, position):
 	print("**AI LOG** - Best Price")
@@ -225,12 +145,18 @@ def aiOne(position, hitters, pitchers, selected_list):
 			print("**AI LOG** - Best Price")
 			#Sort out the playerpool array by Price for pitchers.
 			playerpool = draftpool.sortList(playerpool, "Price", "P")
-			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 0)
+			if randrange(100) > 15:
+				player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
+			else:
+				player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11)
 		else:
 			#If we aren't taking based on price, take by ERA instead
 			print("**AI LOG** - Not best Price, go with best ERA")
 			playerpool = draftpool.sortList(playerpool, "ERA", "P")
-			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 0)
+			if randrange(100) > 20 and position[0] > 0:
+				player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
+			else:
+				player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11)
 
 	return player_to_select
 		
@@ -268,7 +194,10 @@ def aiTwo(position, hitters, pitchers, selected_list, roundCounter):
 		playerpool = pitchers
 		#Sort out the playerpool array by Price for pitchers.
 		playerpool = draftpool.sortList(playerpool, "Price", "P")
-		player_to_select = topFourGrabs("P", playerpool, selected_list, position, 0)
+		if randrange(100) > 20 and position[0] > 0:
+			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
+		else:
+			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11)
 
 	return player_to_select
 
@@ -311,7 +240,7 @@ def aiThree(position, hitters, pitchers, selected_list, roundCounter):
 		playerpool = hitters
 		#Sort out the playerpool array by Price for hitters.
 		playerpool = draftpool.sortList(playerpool, "Price", "H")
-		player_to_select = topFourGrabs("P", playerpool, selected_list, position, 0)
+		player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0)
 
 	return player_to_select
 
@@ -352,7 +281,10 @@ def aiFour(position, hitters, pitchers, selected_list, roundCounter):
 		playerpool = pitchers
 		#Sort out the playerpool array by Price for pitchers.
 		playerpool = draftpool.sortList(playerpool, "Price", "P")
-		player_to_select = topFourGrabs("P", playerpool, selected_list, position, 0)
+		if randrange(100) > 20 and position[0] > 0:
+			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
+		else:
+			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11)
 
 	return player_to_select
 
@@ -393,7 +325,10 @@ def aiFive(position, hitters, pitchers, selected_list, roundCounter):
 		playerpool = pitchers
 		#Sort out the playerpool array by Price for pitchers.
 		playerpool = draftpool.sortList(playerpool, "Price", "P")
-		player_to_select = topFourGrabs("P", playerpool, selected_list, position, 0)
+		if randrange(100) > 20 and position[0] > 0:
+			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
+		else:
+			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11)
 
 	return player_to_select
 
@@ -434,7 +369,10 @@ def aiSix(position, hitters, pitchers, selected_list, roundCounter):
 		playerpool = pitchers
 		#Sort out the playerpool array by Price for pitchers.
 		playerpool = draftpool.sortList(playerpool, "Price", "P")
-		player_to_select = topFourGrabs("P", playerpool, selected_list, position, 0)
+		if randrange(100) > 20 and position[0] > 0:
+			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
+		else:
+			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11)
 
 	return player_to_select
 
@@ -592,7 +530,10 @@ def aiNine(position, hitters, pitchers, selected_list, roundCounter):
 		playerpool = pitchers
 		#Sort out the playerpool array by Price for pitchers.
 		playerpool = draftpool.sortList(playerpool, "Price", "P")
-		player_to_select = topFourGrabs("P", playerpool, selected_list, position, 0)
+		if randrange(100) > 20 and position[0] > 0:
+			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
+		else:
+			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11)
 
 	return player_to_select
 
@@ -632,7 +573,10 @@ def aiTen(position, hitters, pitchers, selected_list, roundCounter):
 		playerpool = pitchers
 		#Sort out the playerpool array by Price for pitchers.
 		playerpool = draftpool.sortList(playerpool, "Price", "P")
-		player_to_select = topFourGrabs("P", playerpool, selected_list, position, 0)
+		if randrange(100) > 20 and position[0] > 0:
+			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
+		else:
+			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11)
 
 	return player_to_select
 
@@ -672,7 +616,10 @@ def aiEleven(position, hitters, pitchers, selected_list, roundCounter):
 		playerpool = pitchers
 		#Sort out the playerpool array by Price for pitchers.
 		playerpool = draftpool.sortList(playerpool, "Price", "P")
-		player_to_select = topFourGrabs("P", playerpool, selected_list, position, 0)
+		if randrange(100) > 20 and position[0] > 0:
+			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
+		else:
+			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11)
 
 	return player_to_select
 
@@ -898,7 +845,10 @@ def aiFifteen(position, hitters, pitchers, selected_list, roundCounter):
 		playerpool = pitchers
 		#Sort out the playerpool array by Price for pitchers.
 		playerpool = draftpool.sortList(playerpool, "Price", "P")
-		player_to_select = topFourGrabs("P", playerpool, selected_list, position, 0)
+		if randrange(100) > 20 and position[0] > 0:
+			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
+		else:
+			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11)
 
 	return player_to_select
 
@@ -939,7 +889,10 @@ def aiSixteen(position, hitters, pitchers, selected_list, roundCounter):
 		playerpool = pitchers
 		#Sort out the playerpool array by Price for pitchers.
 		playerpool = draftpool.sortList(playerpool, "Price", "P")
-		player_to_select = topFourGrabs("P", playerpool, selected_list, position, 0)
+		if randrange(100) > 20 and position[0] > 0:
+			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
+		else:
+			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11)
 
 	return player_to_select
 
@@ -949,7 +902,7 @@ def eligiblePosition(team):
     "C1": 2, "C2": 20, "1B": 3, "2B": 4, "3B": 5, 
     "SS": 6, "LF": 7, "CF": 8, "RF": 9, "UT1": 10, 
     "UT2": 10, "UT3": 10, "UT4": 10, "UT5": 10, "UT6": 10, 
-    "UT7": 10, "SP1": 1, "SP2": 1, "SP3": 1, "SP4": 1, 
+    "SP1": 1, "SP2": 1, "SP3": 1, "SP4": 1, 
     "SP5": 1, "RP1": 11, "RP2": 11, "RP3": 11, "RP4": 11, 
     "RP5": 11
 	}
@@ -971,20 +924,31 @@ def eligiblePosition(team):
 		selected_array[2] = 11
 
 
+
 	selected_value = random.choice(position_lottery)
+	if all(val in [1, 11] for val in position_lottery):
+		selected_value = 0
+	else:
+		while selected_value == 1 or selected_value == 11:
+			selected_value = random.choice(position_lottery)
+	selected_array[0] = selected_value
+	'''
 	while selected_value == 1 or selected_value == 11:
 		selected_value = random.choice(position_lottery)
 	selected_array[0] = selected_value
+	'''
 		
 	
-	if team['AIFocus'] == 15 and any(n in position_lottery for n in (8, 4, 6, 2)):
-		while selected_array[0] not in (8, 4, 6, 2): 
-			selected_array[0] = random.choice(position_lottery)
+	if team['AIFocus'] == 15:
+		if any(n in position_lottery for n in (8, 4, 6, 2)):
+			while selected_array[0] not in (8, 4, 6, 2): 
+				selected_array[0] = random.choice(position_lottery)
 
 	if selected_value == 20 and 2 in position_lottery:
 		selected_array[0] = 2
 
 	return selected_array
+
 
 	
 

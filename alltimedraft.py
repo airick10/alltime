@@ -9,7 +9,19 @@ import inputcheck
 import draftpool
 import aipicks
 
+def clearScreen():
+    try:
+        # For Windows
+        if os.name == 'nt':
+            _ = os.system('cls')
+        # For POSIX systems (Mac and Linux)
+        elif os.name == 'posix':
+            _ = os.system('clear')
+    except Exception:
+        # Fall back to printing newlines if other methods fail
+        print('\n' * 100)
 
+'''
 def clearScreen():
     # For Windows
     if os.name == 'nt':
@@ -17,7 +29,7 @@ def clearScreen():
     # For Mac and Linux (os.name: 'posix')
     else:
         _ = os.system('clear')
-
+'''
 def gatherPlayers(jf, type):
 	with open(jf) as fp:
 		players = json.load(fp)
@@ -146,7 +158,6 @@ def setUpTeams(numteams, randomDraft, humannum):
         team["UT4"] = "Unassigned"
         team["UT5"] = "Unassigned"
         team["UT6"] = "Unassigned"
-        team["UT7"] = "Unassigned"
         counter += 1
         humannum -= 1
         draftCounter += 1  
@@ -200,7 +211,7 @@ def getDraftLog(league, numteams):
 	return draftLog
 		
 	
-def viewTeam(league, hitters, pitchers, select):
+def viewTeam(league, hitters, pitchers, select, enddraft):
 	counter = 0
 	idSelected = False
 	choicearray = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
@@ -247,9 +258,13 @@ def viewTeam(league, hitters, pitchers, select):
 				print(f"{counter}. {k}")
 			counter += 1
 	
-	choice = inputcheck.inputCheck("Choose a player to view details.  Press 0 to go back to the Draft Menu ", 0, 27)
-	while choicearray[choice] == 0 and choice != 0:
-		choice = inputcheck.inputCheck("Player is unassigned at this slot.  Try again.  Choose a player to view details.  Press 0 to go back to the Draft Menu ", 0, 27)
+	if not enddraft:
+		choice = inputcheck.inputCheck("Choose a player to view details.  Press 0 to go back to the Draft Menu ", 0, 27)
+		while choicearray[choice] == 0 and choice != 0:
+			choice = inputcheck.inputCheck("Player is unassigned at this slot.  Try again.  Choose a player to view details.  Press 0 to go back to the Draft Menu ", 0, 27)
+	else:
+		choice = 0
+
 	return choicearray[choice]
 	
 	
@@ -351,6 +366,7 @@ if __name__ == "__main__":
 	draftSlotNum = 1
 	direction = "Up"
 	roundCounter = 1
+	enddraft = False
 	
 	#Gathers up the teams in a draft log array carrying the team['DraftSlot'] integers in proper order.
 	draftlog = getDraftLog(league, numteams)
@@ -390,7 +406,7 @@ if __name__ == "__main__":
 
 
 				if choice == 3:
-					select = viewTeam(league, hitters, pitchers, draftSlotNum)
+					select = viewTeam(league, hitters, pitchers, draftSlotNum, enddraft)
 					if select > 0:
 						clearScreen()
 						select = optionsmenu.playerDetails(hitters, pitchers, select, True)
@@ -401,7 +417,7 @@ if __name__ == "__main__":
 				if choice == 4:
 					select = optionsmenu.viewOtherTeamList(league, numteams, draftSlotNum)
 					if select > 0:
-						choice = viewTeam(league, hitters, pitchers, select)
+						choice = viewTeam(league, hitters, pitchers, select, enddraft)
 						if choice > 0:
 							clearScreen()
 							player_to_draft = optionsmenu.playerDetails(hitters, pitchers, select, True)
@@ -475,7 +491,7 @@ if __name__ == "__main__":
 					aiPickSuccess = True
 					print("")
 		
-		
+
 		# After Pick
 		'''Constructing draft order
 	Start at 1 with the direction going up. Call the draftOrderIncrement function to increment or decrement
@@ -494,3 +510,11 @@ if __name__ == "__main__":
 		else:
 			draftSlotNum = newDraftSlotNum
 		draftcounter += 1
+
+
+	for team in league:
+		enddraft = True
+		print("Showing Rosters")
+		choice = viewTeam(league, hitters, pitchers, team['DraftSlot'], enddraft)
+		input("Press any key to advance to the next team")
+		print("---------------------------")

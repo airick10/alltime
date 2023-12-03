@@ -171,7 +171,7 @@ def selectPlayer(league, hitters, pitchers, player_to_draft, draftSlotNum):
 					if player['ID'] == player_to_draft:
 						# Dictionary to map positions to team roster spots
 						position_map = {
-							0: ['UT1', 'UT2', 'UT3', 'UT4', 'UT5', 'UT6', 'UT7'],
+							0: ['UT1', 'UT2', 'UT3', 'UT4', 'UT5', 'UT6'],
 							2: ['C1', 'C2'],
 							3: ['1B'],
 							4: ['2B'],
