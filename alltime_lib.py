@@ -727,3 +727,39 @@ def getDraftPool(hitters, pitchers, type, sortvalue, selected_list):
 	
 	choice = alltimedraft.inputCheck("Select the number for a player you want to see more details of.  Select 0 to go back to the menu.", 0, 30)
 	return choicearray[choice]
+
+
+def teamHTML(team, hitters, pitchers):
+	pos_ary = ['C1', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'C2', 'UT1', 'UT2', 'UT3', 'UT4', 'UT5', 'UT6']
+	htmlcode = "<h3>" + team['TeamName'] + "</h3>"
+	htmlcode = htmlcode + "<table border=1><caption>Hitters</caption>"
+	for key in pos_ary:
+		for player in hitters:
+			if team[key] == player['ID']:
+				player_values = [
+					key, player['Year'], player['Team'],
+					player['Bat'], player['Fielding'], player['Arm'], player['G'],
+					player['AB'], player['R'], player['H'], player['H'], player['2B'],
+					player['3B'], player['HR'], player['SB'], player['CS'], player['Avg'],
+					player['OBP'], player['SLG'], player['Price']
+					]
+				htmlcode += f"<tr><td>{player['FirstName']} {player['LastName']}</td><td>{'</td><td>'.join(map(str, player_values))}</td></tr>"
+	htmlcode += "</table>"
+	pos_ary = ['SP1', 'SP2', 'SP3', 'SP4', 'SP5', 'RP1', 'RP2', 'RP3', 'RP4', 'RP5']
+	htmlcode = htmlcode + "<table border=1><caption>Pitchers</caption>"
+	for key in pos_ary:
+		for player in pitchers:
+			if team[key] == player['ID']:
+				player_values = [
+					key, player['Year'], player['Team'],
+					player['Throw'], player['Role'], player['G'], player['GS'],
+					player['CG'], player['W'], player['L'], player['SV'],
+					player['IP'], player['H'], player['ER'], player['HR'], player['BB'],
+					player['K'], player['ERA'], player['WHIP'], player['Price']
+					]
+				htmlcode += f"<tr><td>{player['FirstName']} {player['LastName']}</td><td>{'</td><td>'.join(map(str, player_values))}</td></tr>"
+	htmlcode += "</table><p><hr><p>"
+	return htmlcode
+
+
+

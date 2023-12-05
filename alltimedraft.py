@@ -6,6 +6,7 @@ import time
 import random
 import alltime_lib
 import aipicks
+import webbrowser
 
 def clearScreen():
     try:
@@ -76,18 +77,6 @@ def posConvert(pos):
 			return "RP"
 		case _:
 			return ""
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -288,9 +277,19 @@ if __name__ == "__main__":
 		draftcounter += 1
 
 
+	htmlcode = "<html><body>"
 	for team in league:
 		enddraft = True
 		print("Showing Rosters")
-		choice = viewTeam(league, hitters, pitchers, team['DraftSlot'], enddraft)
+		choice = alltime_lib.viewTeam(league, hitters, pitchers, team['DraftSlot'], enddraft)
 		input("Press any key to advance to the next team")
 		print("---------------------------")
+		htmlcode += alltime_lib.teamHTML(team, hitters, pitchers)
+
+	htmlcode += "</body></html>"
+
+
+	with open('alltimedraft.html', 'w') as f:
+		f.write(htmlcode)
+
+	webbrowser.open('alltimedraft.html')
