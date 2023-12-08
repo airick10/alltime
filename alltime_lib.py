@@ -732,21 +732,27 @@ def getDraftPool(hitters, pitchers, type, sortvalue, selected_list):
 def teamHTML(team, hitters, pitchers):
 	pos_ary = ['C1', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'C2', 'UT1', 'UT2', 'UT3', 'UT4', 'UT5', 'UT6']
 	htmlcode = "<h3>" + team['TeamName'] + "</h3>"
-	htmlcode = htmlcode + "<table border=1><caption>Hitters</caption>"
+	htmlcode += f"<table id='{team['TeamID']}'><caption>Hitters</caption>"
+	htmlcode += "<tr><th>Name</th><th>Position</th><th>Year</th><th>Team</th><th>Bat</th><th>Fielding</th><th>Arm</th><th>G</th>"
+	htmlcode += "<th>AB</th><th>R</th><th>H</th><th>2B</th><th>3B</th><th>HR</th><th>RBI</th><th>SB</th><th>CS</th><th>Avg</th>"
+	htmlcode += "<th>OBP</th><th>SLG</th><th>Price</th></tr>"
 	for key in pos_ary:
 		for player in hitters:
 			if team[key] == player['ID']:
 				player_values = [
 					key, player['Year'], player['Team'],
 					player['Bat'], player['Fielding'], player['Arm'], player['G'],
-					player['AB'], player['R'], player['H'], player['H'], player['2B'],
-					player['3B'], player['HR'], player['SB'], player['CS'], player['Avg'],
+					player['AB'], player['R'], player['H'], player['2B'],player['3B'],
+					player['HR'], player['RBI'], player['SB'], player['CS'], player['Avg'],
 					player['OBP'], player['SLG'], player['Price']
 					]
 				htmlcode += f"<tr><td>{player['FirstName']} {player['LastName']}</td><td>{'</td><td>'.join(map(str, player_values))}</td></tr>"
 	htmlcode += "</table>"
 	pos_ary = ['SP1', 'SP2', 'SP3', 'SP4', 'SP5', 'RP1', 'RP2', 'RP3', 'RP4', 'RP5']
-	htmlcode = htmlcode + "<table border=1><caption>Pitchers</caption>"
+	htmlcode += f"<table><caption>Pitchers</caption>"
+	htmlcode += "<tr><th>Name</th><th>Position</th><th>Year</th><th>Team</th><th>Throw</th><th>Role</th><th>G</th><th>GS</th>"
+	htmlcode += "<th>CG</th><th>W</th><th>L</th><th>SV</th><th>IP</th><th>H</th><th>ER</th><th>HR</th><th>BB</th><th>K</th>"
+	htmlcode += "<th>ERA</th><th>WHIP</th><th>Price</th></tr>"
 	for key in pos_ary:
 		for player in pitchers:
 			if team[key] == player['ID']:
@@ -759,6 +765,34 @@ def teamHTML(team, hitters, pitchers):
 					]
 				htmlcode += f"<tr><td>{player['FirstName']} {player['LastName']}</td><td>{'</td><td>'.join(map(str, player_values))}</td></tr>"
 	htmlcode += "</table><p><hr><p>"
+	return htmlcode
+
+
+def getLogFormat(league, hitters, pitchers, team_ary, selected_ary, numteams):
+	htmlcode = "<div>"
+	counter = 0
+	rdCounter = 1
+	rdLabel = 1
+	overallCounter = 0
+	htmlcode += f"---- Round {rdLabel} ----<br>"
+	for pick in selected_ary:
+		if rdCounter > numteams:
+			rdLabel += 1
+			htmlcode += f"---- Round {rdLabel} ----<br>"
+			rdCounter = 1
+		for player in hitters:
+			if pick == player['ID']:
+				name = player['FirstName'] + " " + player['LastName']
+				position = alltimedraft.posConvert(player['DP1'])
+		for player in pitchers:
+			if pick == player['ID']:
+				name = player['FirstName'] + " " + player['LastName']
+				position = alltimedraft.posConvert(player['Role'])
+		htmlcode += f"{overallCounter + 1}. {team_ary[overallCounter]}: {position} - {name}<br>"
+		overallCounter += 1
+		rdCounter += 1
+		counter += 1
+	htmlcode += "</div>"
 	return htmlcode
 
 

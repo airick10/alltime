@@ -111,7 +111,7 @@ def topFourGrabs(type, playerpool, selected_list, position, direction):
 			player_to_select = aiSelectSnippet("**AI LOG** - 4th Pitcher", playerpool, selected_list, 2, defCheck, direction)
 
 	return player_to_select
-
+'''
 def aiOne(position, hitters, pitchers, selected_list):
 	print("**AI LOG** - Focus: Best Overall")
 	#Gets a random number.  For this, 80% of the time you go by price.
@@ -894,6 +894,98 @@ def aiSixteen(position, hitters, pitchers, selected_list, roundCounter):
 			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11)
 
 	return player_to_select
+'''
+
+def autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys):
+	sideThreshold = 50
+	side = random.randrange(100)
+
+	if roundCounter < 3:
+		sideThreshold = 90
+
+	if side < sideThreshold and roundCounter < 3:
+		player_to_select = firstRounds(30, hitters, pitchers, selected_list, position)
+	elif side < sideThreshold:
+		key_index = weighted_random_choice([0, 1, 2], [70, 20, 10])  # Weighted random choice for key_index
+		key_str = keys[key_index]  # Select the key using the randomly chosen index
+		print(f"**AI LOG** - Hitter Selected ({key_str})")
+		playerpool = hitters
+		rolerandom = random.randrange(100)
+
+		print(f"**AI LOG** - Category: {key_str}")
+		playerpool = alltime_lib.sortList(playerpool, key_str, "H")
+		if focus < 15 and focus > 11:
+			if randrange(100) < 65:
+				player_to_select = topFourGrabs("H", playerpool, selected_list, position, focus)
+			else:
+				player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0)
+		else:
+			player_to_select = topFourGrabs("H", playerpool, selected_list, position, focus)
+	else:
+		key_index = weighted_random_choice([3, 4, 5], [70, 20, 10])  # Weighted random choice for key_index
+		key_str = keys[key_index]  # Select the key using the randomly chosen index
+		print(f"**AI LOG** - Pitcher Selected ({key_str})")
+		playerpool = pitchers
+		rolerandom = random.randrange(100)
+		if rolerandom < 80 and position[1] > 0:
+			print("**AI LOG** - Select Starting Pitcher")
+			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
+		else:
+			print("**AI LOG** - Select Relief Pitcher")
+			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11)
+	return player_to_select
+
+
+def autoSelectPitcher(position, hitters, pitchers, selected_list, roundCounter, focus, keys):
+	sideThreshold = 50
+	side = random.randrange(100)
+
+	if roundCounter < 3:
+		sideThreshold = 90
+
+	if side < sideThreshold and roundCounter < 3:
+		player_to_select = firstRounds(30, hitters, pitchers, selected_list, position)
+	elif side < sideThreshold:
+		key_index = weighted_random_choice([0, 1, 2], [70, 20, 10])  # Weighted random choice for key_index
+		key_str = keys[key_index]  # Select the key using the randomly chosen index
+		print(f"**AI LOG** - Pitcher Selected ({key_str})")
+		playerpool = pitchers
+		rolerandom = random.randrange(100)
+
+		print(f"**AI LOG** - Category: {key_str}")
+		playerpool = alltime_lib.sortList(playerpool, key_str, "P")
+
+		if rolerandom < 80 and position[1] > 0:
+			print("**AI LOG** - Select Starting Pitcher")
+			if focus == 13:
+				if randrange(100) < 65:
+					player_to_select = topFourGrabs("P", playerpool, selected_list, position, focus)
+				else:
+					player_to_select = topFourGrabs("P", playerpool, selected_list, position, 0)
+			else:
+				player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
+		else:
+			print("**AI LOG** - Select Relief Pitcher")
+			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11)
+	else:
+		key_index = weighted_random_choice([3, 4, 5], [70, 20, 10])  # Weighted random choice for key_index
+		key_str = keys[key_index]  # Select the key using the randomly chosen index
+		print(f"**AI LOG** - Hitter Selected ({key_str})")
+		playerpool = hitters
+		player_to_select = topFourGrabs("H", playerpool, selected_list, position, focus)
+
+	return player_to_select
+
+
+def weighted_random_choice(choices, weights):
+	total_weight = sum(weights)
+	threshold = random.uniform(0, total_weight)
+	current_weight = 0
+	
+	for choice, weight in zip(choices, weights):
+		current_weight += weight
+		if current_weight >= threshold:
+			return choice
 
 
 def eligiblePosition(team):
@@ -960,52 +1052,100 @@ def aiSelect(league, hitters, pitchers, selected_list, draftSlotNum, roundCounte
 			match team['AIFocus']:
 				case 1:
 					#Best Overall
-					player_selected = aiOne(position, hitters, pitchers, selected_list)
+					keys = ["Price", "Price", "Price", "Price", "Price", "Price"]
+					focus = 0
+					player_selected = autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys)
+					#player_selected = aiOne(position, hitters, pitchers, selected_list)
 				case 2:
 					#Power Hitting
-					player_selected = aiTwo(position, hitters, pitchers, selected_list, roundCounter)
+					keys = ["HR", "SLG", "RBI", "Price", "K", "ERA"]
+					focus = 0
+					player_selected = autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys)
+					#player_selected = aiTwo(position, hitters, pitchers, selected_list, roundCounter)
 				case 3:
 					#Starting Pitching
-					player_selected = aiThree(position, hitters, pitchers, selected_list, roundCounter)
+					keys = ["Price", "W", "ERA", "Price", "OBP", "HR"]
+					focus = 0
+					player_selected = autoSelectPitcher(position, hitters, pitchers, selected_list, roundCounter, focus, keys)
+					#player_selected = aiThree(position, hitters, pitchers, selected_list, roundCounter)
 				case 4:
 					#Batting Avg/Speed
-					player_selected = aiFour(position, hitters, pitchers, selected_list, roundCounter)
+					keys = ["Avg", "SB", "Price", "Price", "WHIP", "ERA"]
+					focus = 0
+					player_selected = autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys)
+					#player_selected = aiFour(position, hitters, pitchers, selected_list, roundCounter)
 				case 5:
 					#Defense/Hits
-					player_selected = aiFive(position, hitters, pitchers, selected_list, roundCounter)
+					keys = ["Price", "H", "Avg", "Price", "W", "K"]
+					focus = 12
+					player_selected = autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys)
+					#player_selected = aiFive(position, hitters, pitchers, selected_list, roundCounter)
 				case 6:
 					#Defense/Speed
-					player_selected = aiSix(position, hitters, pitchers, selected_list, roundCounter)
+					keys = ["Price", "SB", "Avg", "Price", "W", "K"]
+					focus = 12
+					player_selected = autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys)
+					#player_selected = aiSix(position, hitters, pitchers, selected_list, roundCounter)
 				case 7:
 					#Strong Bullpen
-					player_selected = aiSeven(position, hitters, pitchers, selected_list, roundCounter)
+					keys = ["Price", "SV", "ERA", "Price", "HR", "RBI"]
+					focus = 11
+					player_selected = autoSelectPitcher(position, hitters, pitchers, selected_list, roundCounter, focus, keys)
+					#player_selected = aiSeven(position, hitters, pitchers, selected_list, roundCounter)
 				case 8:
 					#WHIP kings
-					player_selected = aiEight(position, hitters, pitchers, selected_list, roundCounter)
+					keys = ["WHIP", "ERA", "Price", "Price", "Avg", "RBI"]
+					focus = 0
+					player_selected = autoSelectPitcher(position, hitters, pitchers, selected_list, roundCounter, focus, keys)
+					#player_selected = aiEight(position, hitters, pitchers, selected_list, roundCounter)
 				case 9:
 					#Speed
-					player_selected = aiNine(position, hitters, pitchers, selected_list, roundCounter)
+					keys = ["SB", "OBP", "Price", "Price", "WHIP", "W"]
+					focus = 0
+					player_selected = autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys)
+					#player_selected = aiNine(position, hitters, pitchers, selected_list, roundCounter)
 				case 10:
 					#Gappers - Doubles/Triples
-					player_selected = aiTen(position, hitters, pitchers, selected_list, roundCounter)
+					keys = ["2B", "SLG", "3B", "Price", "K", "WHIP"]
+					focus = 0
+					player_selected = autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys)
+					#player_selected = aiTen(position, hitters, pitchers, selected_list, roundCounter)
 				case 11:
 					#On Base Team
-					player_selected = aiEleven(position, hitters, pitchers, selected_list, roundCounter)
+					keys = ["OBP", "Avg", "Price", "Price", "WHIP", "ERA"]
+					focus = 0
+					player_selected = autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys)
+					#player_selected = aiEleven(position, hitters, pitchers, selected_list, roundCounter)
 				case 12:
 					#Power Pitchers
-					player_selected = aiTwelve(position, hitters, pitchers, selected_list, roundCounter)
+					keys = ["K", "WHIP", "Price", "Price", "HR", "SLG"]
+					focus = 0
+					player_selected = autoSelectPitcher(position, hitters, pitchers, selected_list, roundCounter, focus, keys)
+					#player_selected = aiTwelve(position, hitters, pitchers, selected_list, roundCounter)
 				case 13:
 					#Lefty Dome
-					player_selected = aiThirteen(position, hitters, pitchers, selected_list)
+					keys = ["Price", "Avg", "SLG", "Price", "ERA", "WHIP"]
+					focus = 13
+					player_selected = autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys)
+					#player_selected = aiThirteen(position, hitters, pitchers, selected_list)
 				case 14:
 					#Balance. Hitters and Pitchers back and forth
-					player_selected = aiFourteen(position, hitters, pitchers, selected_list, roundCounter)
+					keys = ["Price", "Avg", "HR", "Price", "ERA", "W"]
+					focus = 0
+					player_selected = autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys)
+					#player_selected = aiFourteen(position, hitters, pitchers, selected_list, roundCounter)
 				case 15:
 					#Strong Up the Middle
-					player_selected = aiFifteen(position, hitters, pitchers, selected_list, roundCounter)
+					keys = ["Price", "Avg", "HR", "Price", "ERA", "W"]
+					focus = 14
+					player_selected = autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys)
+					#player_selected = aiFifteen(position, hitters, pitchers, selected_list, roundCounter)
 				case 16:
 					#Clutch Hitters
-					player_selected = aiSixteen(position, hitters, pitchers, selected_list, roundCounter)
+					keys = ["RBI", "SLG", "Price", "Price", "WHIP", "K"]
+					focus = 0
+					player_selected = autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys)
+					#player_selected = aiSixteen(position, hitters, pitchers, selected_list, roundCounter)
 
 	return player_selected
 

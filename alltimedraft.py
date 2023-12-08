@@ -278,6 +278,10 @@ if __name__ == "__main__":
 
 
 	htmlcode = "<html><body>"
+	htmlcode += "<style>caption {font-weight: bold;font-size: 14px;}table{font-family: Arial, Helvetica, sans-serif;"
+	htmlcode += "border-collapse: collapse;width: 100%;font-size: 12px;}th {padding-top: 4px;padding-bottom: 4px;"
+	htmlcode += "text-align: left;font-weight: bold;}tr:nth-child(even){background-color: #f2f2f2;}tr:hover {background-color: #ddd;}"
+	htmlcode += "</style></head>"
 	for team in league:
 		enddraft = True
 		print("Showing Rosters")
@@ -286,6 +290,7 @@ if __name__ == "__main__":
 		print("---------------------------")
 		htmlcode += alltime_lib.teamHTML(team, hitters, pitchers)
 
+	htmlcode += alltime_lib.getLogFormat(league, hitters, pitchers, draftlog, selected_list, numteams)
 	htmlcode += "</body></html>"
 
 
