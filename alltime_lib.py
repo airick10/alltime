@@ -472,7 +472,9 @@ def selectPlayer(league, hitters, pitchers, player_to_draft, draftSlotNum):
 								print("")
 								print("No position is available to put this player on.  Please select another.")
 							else:
-								print("**AI LOG** - Position Check Failed.  Choosing another")
+								with open('log.txt', 'a') as file:
+									file.write("**AI LOG** - Position Check Failed.  Choosing another" + '\n')
+								#print("**AI LOG** - Position Check Failed.  Choosing another")
 			else:
 				for player in pitchers:
 					if player['ID'] == player_to_draft:
@@ -493,7 +495,9 @@ def selectPlayer(league, hitters, pitchers, player_to_draft, draftSlotNum):
 							print("")
 							print("No position is available to put this player on.  Please select another.")
 						else:
-							print("**AI LOG** - Position Check Failed.  Choosing another")
+							with open('log.txt', 'a') as file:
+								file.write("**AI LOG** - Position Check Failed.  Choosing another" + '\n')
+							#print("**AI LOG** - Position Check Failed.  Choosing another")
 
 	return position
 
@@ -506,12 +510,16 @@ def assignToRoster(league, hitters, pitchers, player_to_draft, draftSlotNum, pos
 					if player['ID'] == player_to_draft:
 						team[position] = player_to_draft
 						pos = alltimedraft.posConvert(player['DP1'])
+						with open('log.txt', 'a') as file:
+							file.write(f"{team['TeamName']} have drafted {pos} - {player['FirstName']} {player['LastName']} " + '\n')
 						print(f"{team['TeamName']} have drafted {pos} - {player['FirstName']} {player['LastName']} ")
 			else:
 				for player in pitchers:
 					if player['ID'] == player_to_draft:
 						team[position] = player_to_draft
 						pos = alltimedraft.posConvert(player['Role'])
+						with open('log.txt', 'a') as file:
+							file.write(f"{team['TeamName']} have drafted {pos} - {player['FirstName']} {player['LastName']} " + '\n')
 						print(f"{team['TeamName']} have drafted {pos} - {player['FirstName']} {player['LastName']} ")
 	return league
 
@@ -727,6 +735,34 @@ def getDraftPool(hitters, pitchers, type, sortvalue, selected_list):
 	
 	choice = alltimedraft.inputCheck("Select the number for a player you want to see more details of.  Select 0 to go back to the menu.", 0, 30)
 	return choicearray[choice]
+
+def sortTeamCat(league, hitters, pitchers, cat, type):
+	catDict = {}
+	TotalCat = 0
+	if type == "H":
+		pos_ary = ['C1', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'C2', 'UT1', 'UT2', 'UT3', 'UT4', 'UT5', 'UT6']
+		for team in league:
+			for key in pos_ary:
+				for player in hitters:
+					if team[key] == player['ID']:
+						TotalCat += player[cat]
+			TotalCat = TotalCat / 15
+			catDict.update({team['TeamName']: round(TotalCat)})
+			TotalCat = 0
+	else:
+		pos_ary = ['SP1', 'SP2', 'SP3', 'SP4', 'SP5', 'RP1', 'RP2', 'RP3', 'RP4', 'RP5']
+		for team in league:
+			for key in pos_ary:
+				for player in pitchers:
+					if team[key] == player['ID']:
+						TotalCat += player[cat]
+			TotalCat = TotalCat / 10
+			catDict.update({team['TeamName']: round(TotalCat)})
+			TotalCat = 0
+	return catDict
+
+
+
 
 
 def teamHTML(team, hitters, pitchers):

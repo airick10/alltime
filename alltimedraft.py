@@ -81,6 +81,11 @@ def posConvert(pos):
 
 
 if __name__ == "__main__":
+	file_path = 'log.txt'
+	try:
+		os.remove(file_path)
+	except FileNotFoundError:
+		print(f"The file {file_path} does not exist.")
 	clearScreen()
 	print("Welcome to the All Time Draft!  Gathering players...")
 	#Takes in the file either submitted by the user or the default.  TO DO
@@ -138,6 +143,10 @@ if __name__ == "__main__":
 	
 	while (numteams * 25) > draftcounter:
 		if (draftcounter % numteams) == 1:
+			with open('log.txt', 'a') as file:
+				file.write("" + '\n')
+				file.write("Round {} Started!".format(roundCounter) + '\n')
+				file.write("------------" + '\n')
 			print("")
 			print("Round {} Started!".format(roundCounter))
 			print("------------")
@@ -277,11 +286,22 @@ if __name__ == "__main__":
 		draftcounter += 1
 
 
+	priceDictH = alltime_lib.sortTeamCat(league, hitters, pitchers, "Price", "H")
+	priceDictP = alltime_lib.sortTeamCat(league, hitters, pitchers, "Price", "P")
+	priceDictH = dict(sorted(priceDictH.items(), key=lambda item: item[1], reverse=True))
+	priceDictP = dict(sorted(priceDictP.items(), key=lambda item: item[1], reverse=True))
 	htmlcode = "<html><body>"
 	htmlcode += "<style>caption {font-weight: bold;font-size: 14px;}table{font-family: Arial, Helvetica, sans-serif;"
 	htmlcode += "border-collapse: collapse;width: 100%;font-size: 12px;}th {padding-top: 4px;padding-bottom: 4px;"
 	htmlcode += "text-align: left;font-weight: bold;}tr:nth-child(even){background-color: #f2f2f2;}tr:hover {background-color: #ddd;}"
-	htmlcode += "</style></head>"
+	htmlcode += "</style></head><body>"
+	htmlcode += "<h3>Standings - Hitters</h3><p><ol>"
+	for k,v in priceDictH.items():
+		htmlcode += f"<li>{k}: {v}</li>"
+	htmlcode += "</ol><p><h3>Standings - Pitchers</h3><ol>"
+	for k,v in priceDictP.items():
+		htmlcode += f"<li>{k}: {v}</li>"
+	htmlcode += "</ol><p><hr><p>"
 	for team in league:
 		enddraft = True
 		print("Showing Rosters")

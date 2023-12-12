@@ -11,8 +11,12 @@ import random
 # 12 - Position Player position check (Looking for 1s on defense)
 
 def aiSelectSnippet(log, playerpool, selected_list, threshold, defCheck, direction):
-	print(log)
-	print(f"DefCheck - {defCheck}")
+	defchecklog = f"DefCheck - {defCheck}"
+	with open('log.txt', 'a') as file:
+		file.write(log + '\n')
+		file.write(defchecklog + '\n')
+	#print(log)
+	#print(f"DefCheck - {defCheck}")
 
     # Create a dictionary that maps defCheck values to corresponding lambda functions
 	check_functions = {
@@ -51,20 +55,30 @@ def aiSelectSnippet(log, playerpool, selected_list, threshold, defCheck, directi
 
 
 def firstRounds(roll, hitters, pitchers, selected_list, position):
-	print("**AI LOG** - Best Price")
+	with open('log.txt', 'a') as file:
+		file.write("**AI LOG** - Best Price" + '\n')
+	#print("**AI LOG** - Best Price")
 	#Putting the hitter pool in its own playerpool for the AI
 	hproll = randrange(100)
 	position_array = [0,1,0]
 	if hproll < roll:
-		print("**AI LOG** - Hitter Selected")
+		with open('log.txt', 'a') as file:
+			file.write("**AI LOG** - Hitter Selected" + '\n')
+		#print("**AI LOG** - Hitter Selected")
 		playerpool = hitters
-		print("**AI LOG** - Best Price")
+		with open('log.txt', 'a') as file:
+			file.write("**AI LOG** - Best Price" + '\n')
+		#print("**AI LOG** - Best Price")
 		playerpool = alltime_lib.sortList(playerpool, "Price", "H")
 		player_to_select = topFourGrabs("H", playerpool, selected_list, position_array, 0)
 	else:
-		print("**AI LOG** - Pitcher Selected")
+		with open('log.txt', 'a') as file:
+			file.write("**AI LOG** - Pitcher Selected" + '\n')
+		#print("**AI LOG** - Pitcher Selected")
 		playerpool = pitchers
-		print("**AI LOG** - Best Price")
+		with open('log.txt', 'a') as file:
+			file.write("**AI LOG** - Best Price" + '\n')
+		#print("**AI LOG** - Best Price")
 		playerpool = alltime_lib.sortList(playerpool, "Price", "P")
 		player_to_select = topFourGrabs("P", playerpool, selected_list, position_array, 0)
 	return player_to_select
@@ -111,790 +125,7 @@ def topFourGrabs(type, playerpool, selected_list, position, direction):
 			player_to_select = aiSelectSnippet("**AI LOG** - 4th Pitcher", playerpool, selected_list, 2, defCheck, direction)
 
 	return player_to_select
-'''
-def aiOne(position, hitters, pitchers, selected_list):
-	print("**AI LOG** - Focus: Best Overall")
-	#Gets a random number.  For this, 80% of the time you go by price.
-	#20% of the time, go by OBP.  For pitchers, go to ERA.
-	randnum = randrange(100)
-	#Deciding on hitter or pitcher.
-	side = randrange(2)
-	if side == 0:
-		print("**AI LOG** - Hitter Selected")
-		#Putting the hitter pool in its own playerpool for the AI.
-		playerpool = hitters
-		#If that random roll was from 0 - 79, look for the overall price.
-		if randnum < 80:
-			print("**AI LOG** - Best Price")
-			#Sort out the playerpool array by Price for hitters.
-			playerpool = alltime_lib.sortList(playerpool, "Price", "H")
-			player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0)
-		else:
-			#If we aren't taking based on price, take by slugging instead.
-			print("**AI LOG** - Not best Price, go with best Slugging")
-			playerpool = alltime_lib.sortList(playerpool, "SLG", "H")
-			player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0)
-	#Same as above, but for a pitcher.
-	else:
-		print("**AI LOG** - Pitcher Selected")
-		#Putting the pitcher pool in its own playerpool for the AI.
-		playerpool = pitchers
-		#If that random roll was from 0 - 79, look for the overall price.
-		if randnum < 80:
-			print("**AI LOG** - Best Price")
-			#Sort out the playerpool array by Price for pitchers.
-			playerpool = alltime_lib.sortList(playerpool, "Price", "P")
-			if randrange(100) > 15:
-				player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
-			else:
-				player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11)
-		else:
-			#If we aren't taking based on price, take by ERA instead
-			print("**AI LOG** - Not best Price, go with best ERA")
-			playerpool = alltime_lib.sortList(playerpool, "ERA", "P")
-			if randrange(100) > 20 and position[0] > 0:
-				player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
-			else:
-				player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11)
 
-	return player_to_select
-		
-
-def aiTwo(position, hitters, pitchers, selected_list, roundCounter):
-	print("**AI LOG** - Focus: Power Hitting")
-	#Gets a random number.  For this, 60% of the time you go by HR.
-	#20% of the time, go by SLG.
-	#20% of the time, go by RBI.
-	randnum = randrange(100)
-	#Deciding on hitter (70%) or pitcher (30%).
-	sideThreshold = 70
-	side = randrange(100)
-	if roundCounter < 3:
-		sideThreshold = 90
-	if side < sideThreshold:
-		print("**AI LOG** - Hitter Selected")
-		#Putting the hitter pool in its own playerpool for the AI
-		playerpool = hitters
-		if randnum < 60:
-			print("**AI LOG** - Most HR")
-			playerpool = alltime_lib.sortList(playerpool, "HHR", "H")
-			player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0)
-		elif randnum < 80 and randnum >= 60:
-			print("**AI LOG** - Best SLG")
-			playerpool = alltime_lib.sortList(playerpool, "SLG", "H")
-			player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0)
-		else:
-			print("**AI LOG** - Most RBI")
-			playerpool = alltime_lib.sortList(playerpool, "RBI", "H")
-			player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0)
-	else:
-		print("**AI LOG** - Pitcher Selected")
-		print("**AI LOG** - Best Price")
-		playerpool = pitchers
-		#Sort out the playerpool array by Price for pitchers.
-		playerpool = alltime_lib.sortList(playerpool, "Price", "P")
-		if randrange(100) > 20 and position[0] > 0:
-			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
-		else:
-			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11)
-
-	return player_to_select
-
-
-def aiThree(position, hitters, pitchers, selected_list, roundCounter):
-	print("**AI LOG** - Focus: Starting Pitching")
-	#Gets a random number.  For this, 30% of the time you go by Price.
-	#30% of the time, go by Wins.
-	#20% of the time, go by ERA.
-	#20% of the time, go by Strikeouts.
-	randnum = randrange(100)
-	#Deciding on hitter (70%) or pitcher (30%).
-	sideThreshold = 70
-	side = randrange(100)
-	if roundCounter < 3:
-		sideThreshold = 90
-	if side < sideThreshold:
-		print("**AI LOG** - Pitcher Selected")
-		#Putting the pitcher pool in its own playerpool for the AI
-		playerpool = pitchers
-		if randnum < 30:
-			print("**AI LOG** - Best Price")
-			playerpool = alltime_lib.sortList(playerpool, "Price", "P")
-			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
-		elif randnum < 60 and randnum >= 30:
-			print("**AI LOG** - Most Wins")
-			playerpool = alltime_lib.sortList(playerpool, "W", "P")
-			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
-		elif randnum < 80 and randnum >= 60:
-			print("**AI LOG** - Most Strikeouts")
-			playerpool = alltime_lib.sortList(playerpool, "PK", "P")
-			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
-		else:
-			print("**AI LOG** - Best ERA")
-			playerpool = alltime_lib.sortList(playerpool, "ERA", "P")
-			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
-	else:
-		print("**AI LOG** - Hitter Selected")
-		print("**AI LOG** - Best Price")
-		playerpool = hitters
-		#Sort out the playerpool array by Price for hitters.
-		playerpool = alltime_lib.sortList(playerpool, "Price", "H")
-		player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0)
-
-	return player_to_select
-
-def aiFour(position, hitters, pitchers, selected_list, roundCounter):
-	print("**AI LOG** - Focus: Batting Avg/Speed")
-	#Gets a random number.  For this, 40% of the time you go by Avg.
-	#40% of the time, go by SB.
-	#20% of the time, go by Price.
-	randnum = randrange(100)
-	#Deciding on hitter (70%) or pitcher (30%).
-	
-	sideThreshold = 60
-	side = randrange(100)
-	if roundCounter < 3:
-		sideThreshold = 90
-	if side < sideThreshold and roundCounter < 3:
-		player_to_select = firstRounds(60, hitters, pitchers, selected_list, position)
-	elif side < sideThreshold:
-		print("**AI LOG** - Hitter Selected")
-		#Putting the hitter pool in its own playerpool for the AI
-		playerpool = hitters
-		if randnum < 40:
-			print("**AI LOG** - Best Avg")
-			playerpool = alltime_lib.sortList(playerpool, "Avg", "H")
-			player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0)
-		elif randnum < 80 and randnum >= 40:
-			print("**AI LOG** - Most SB")
-			playerpool = alltime_lib.sortList(playerpool, "SB", "H")
-			player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0)
-		else:
-			print("**AI LOG** - Best Price")
-			playerpool = alltime_lib.sortList(playerpool, "Price", "H")
-			player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0)
-
-	else:
-		print("**AI LOG** - Pitcher Selected")
-		print("**AI LOG** - Best Price")
-		playerpool = pitchers
-		#Sort out the playerpool array by Price for pitchers.
-		playerpool = alltime_lib.sortList(playerpool, "Price", "P")
-		if randrange(100) > 20 and position[0] > 0:
-			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
-		else:
-			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11)
-
-	return player_to_select
-
-
-def aiFive(position, hitters, pitchers, selected_list, roundCounter):
-	print("**AI LOG** - Focus: Defense/Hits")
-	#Gets a random number.  For this, 60% of the time you go by Price.
-	#30% of the time, go by Hits.
-	#10% of the time, go by Avg.
-	randnum = randrange(100)
-	#Deciding on hitter (70%) or pitcher (30%).
-	sideThreshold = 70
-	side = randrange(100)
-	if roundCounter < 3:
-		sideThreshold = 90
-	if side < sideThreshold and roundCounter < 3:
-		player_to_select = firstRounds(60, hitters, pitchers, selected_list, position)
-	elif side < sideThreshold:
-		print("**AI LOG** - Hitter Selected")
-		#Putting the hitter pool in its own playerpool for the AI
-		playerpool = hitters
-		if randnum < 60:
-			print("**AI LOG** - Best Price (Def Check)")
-			playerpool = alltime_lib.sortList(playerpool, "Price", "H")
-			player_to_select = topFourGrabs("H", playerpool, selected_list, position, 12)
-		elif randnum < 90 and randnum >= 60:
-			print("**AI LOG** - Most Hits (Def Check)")
-			playerpool = alltime_lib.sortList(playerpool, "H", "H")
-			player_to_select = topFourGrabs("H", playerpool, selected_list, position, 12)
-		else:
-			print("**AI LOG** - Best Avg (Def Check)")
-			playerpool = alltime_lib.sortList(playerpool, "Avg", "H")
-			player_to_select = topFourGrabs("H", playerpool, selected_list, position, 12)
-			
-	else:
-		print("**AI LOG** - Pitcher Selected")
-		print("**AI LOG** - Best Price")
-		playerpool = pitchers
-		#Sort out the playerpool array by Price for pitchers.
-		playerpool = alltime_lib.sortList(playerpool, "Price", "P")
-		if randrange(100) > 20 and position[0] > 0:
-			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
-		else:
-			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11)
-
-	return player_to_select
-
-
-def aiSix(position, hitters, pitchers, selected_list, roundCounter):
-	print("**AI LOG** - Focus: Defense/Speed")
-	#Gets a random number.  For this, 60% of the time you go by Price.
-	#30% of the time, go by SB.
-	#10% of the time, go by Avg.
-	randnum = randrange(100)
-	#Deciding on hitter (70%) or pitcher (30%).
-	sideThreshold = 70
-	side = randrange(100)
-	if roundCounter < 3:
-		sideThreshold = 90
-	if side < sideThreshold and roundCounter < 3:
-		player_to_select = firstRounds(50, hitters, pitchers, selected_list, position)
-	elif side < sideThreshold:
-		print("**AI LOG** - Hitter Selected")
-		#Putting the hitter pool in its own playerpool for the AI
-		playerpool = hitters
-		if randnum < 60:
-			print("**AI LOG** - Best Price (Def Check)")
-			playerpool = alltime_lib.sortList(playerpool, "Price", "H")
-			player_to_select = topFourGrabs("H", playerpool, selected_list, position, 12)
-		elif randnum < 90 and randnum >= 60:
-			print("**AI LOG** - Most Stolen Bases (Def Check)")
-			playerpool = alltime_lib.sortList(playerpool, "SB", "H")
-			player_to_select = topFourGrabs("H", playerpool, selected_list, position, 12)
-		else:
-			print("**AI LOG** - Best Avg (Def Check)")
-			playerpool = alltime_lib.sortList(playerpool, "Avg", "H")
-			player_to_select = topFourGrabs("H", playerpool, selected_list, position, 12)
-			
-	else:
-		print("**AI LOG** - Pitcher Selected")
-		print("**AI LOG** - Best Price")
-		playerpool = pitchers
-		#Sort out the playerpool array by Price for pitchers.
-		playerpool = alltime_lib.sortList(playerpool, "Price", "P")
-		if randrange(100) > 20 and position[0] > 0:
-			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
-		else:
-			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11)
-
-	return player_to_select
-
-def aiSeven(position, hitters, pitchers, selected_list, roundCounter):
-	print("**AI LOG** - Focus: Bullpen")
-	#Gets a random number.  For this, 40% of the time you go by Price with Bullpen.
-	#40% of the time, go by Price with Starters.
-	#20% of the time, go by ERA.
-	randnum = randrange(100)
-	#Deciding on hitter (70%) or pitcher (30%).
-	sideThreshold = 70
-	side = randrange(100)
-	if roundCounter < 6:
-		sideThreshold = 90
-	if side < sideThreshold and roundCounter < 3:
-		print("**AI LOG** - Best Price")
-		#Putting the hitter pool in its own playerpool for the AI
-		hproll = randrange(100)
-		if hproll < 40:
-			print("**AI LOG** - Hitter Selected")
-			playerpool = hitters
-			print("**AI LOG** - Best Price")
-			playerpool = alltime_lib.sortList(playerpool, "Price", "H")
-			player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0)
-		else:
-			rolerandom = randrange(100)
-			print("**AI LOG** - Pitcher Selected")
-			playerpool = pitchers
-			print("**AI LOG** - Best Price")
-			playerpool = alltime_lib.sortList(playerpool, "Price", "P")
-			if rolerandom < 70:
-				print("**AI LOG** - Select Starting Pitcher")
-				player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
-			else:
-				print("**AI LOG** - Select Relief Pitcher")
-				player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11)
-
-	elif side < sideThreshold:
-		print("**AI LOG** - Pitcher Selected")
-		#Putting the pitcher pool in its own playerpool for the AI
-		playerpool = pitchers
-		if randnum < 40:
-			print("**AI LOG** - Best Price (Def Check)")
-			playerpool = alltime_lib.sortList(playerpool, "Price", "P")
-			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 0)
-		elif randnum < 80 and randnum >= 40:
-			print("**AI LOG** - Most Saves (Def Check)")
-			playerpool = alltime_lib.sortList(playerpool, "SV", "P")
-			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11)
-		else:
-			print("**AI LOG** - Best ERA")
-			playerpool = alltime_lib.sortList(playerpool, "ERA", "P")
-			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 0)
-			
-	else:
-		print("**AI LOG** - Hitter Selected")
-		print("**AI LOG** - Best Price")
-		playerpool = hitters
-		#Sort out the playerpool array by Price for hitters.
-		playerpool = alltime_lib.sortList(playerpool, "Price", "H")
-		player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0)
-
-	return player_to_select
-
-
-def aiEight(position, hitters, pitchers, selected_list, roundCounter):
-	print("**AI LOG** - Focus: WHIP Kings")
-	#Gets a random number.  For this, 60% of the time you go by WHIP.
-	#20% of the time, go by ERA.
-	#20% of the time, go by Price.
-	randnum = randrange(100)
-	#Deciding on hitter (70%) or pitcher (30%).
-	sideThreshold = 70
-	side = randrange(100)
-	if roundCounter < 3:
-		sideThreshold = 90
-	if side < sideThreshold and roundCounter < 3:
-		player_to_select = firstRounds(30, hitters, pitchers, selected_list, position)
-	elif side < sideThreshold:
-		print("**AI LOG** - Pitcher Selected")
-		#Putting the pitchers pool in its own playerpool for the AI
-		playerpool = pitchers
-		rolerandom = randrange(100)
-		if randnum < 60:
-			print("**AI LOG** - Best WHIP")
-			playerpool = alltime_lib.sortList(playerpool, "WHIP", "P")
-			if rolerandom < 80:
-				print("**AI LOG** - Select Starting Pitcher")
-				player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
-			else:
-				print("**AI LOG** - Select Relief Pitcher")
-				player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11)
-		elif randnum < 80 and randnum >= 60:
-			print("**AI LOG** - Best ERA")
-			playerpool = alltime_lib.sortList(playerpool, "ERA", "P")
-			if rolerandom < 80:
-				print("**AI LOG** - Select Starting Pitcher")
-				player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
-			else:
-				print("**AI LOG** - Select Relief Pitcher")
-				player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11)
-		else:
-			print("**AI LOG** - Best Price")
-			playerpool = alltime_lib.sortList(playerpool, "Price", "P")
-			if rolerandom < 80:
-				print("**AI LOG** - Select Starting Pitcher")
-				player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
-			else:
-				print("**AI LOG** - Select Relief Pitcher")
-				player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11)
-			
-	else:
-		print("**AI LOG** - Hitter Selected")
-		print("**AI LOG** - Best Price")
-		playerpool = hitters
-		#Sort out the playerpool array by Price for hitters.
-		playerpool = alltime_lib.sortList(playerpool, "Price", "H")
-		player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0)
-
-	return player_to_select
-
-
-def aiNine(position, hitters, pitchers, selected_list, roundCounter):
-	print("**AI LOG** - Focus: Speed")
-	#Gets a random number.  For this, 60% of the time you go by Stolen Bases.
-	#30% of the time, go by OBP.
-	#10% of the time, go by Price.
-	randnum = randrange(100)
-	#Deciding on hitter (70%) or pitcher (30%).
-	sideThreshold = 70
-	side = randrange(100)
-	if roundCounter < 3:
-		sideThreshold = 90
-	if side < sideThreshold and roundCounter < 3:
-		player_to_select = firstRounds(60, hitters, pitchers, selected_list, position)
-	elif side < sideThreshold:
-		print("**AI LOG** - Hitter Selected")
-		#Putting the hitter pool in its own playerpool for the AI
-		playerpool = hitters
-		if randnum < 60:
-			print("**AI LOG** - Most Stolen Bases")
-			playerpool = alltime_lib.sortList(playerpool, "SB", "H")
-			player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0)
-		elif randnum < 90 and randnum >= 60:
-			print("**AI LOG** - On Base Percentage")
-			playerpool = alltime_lib.sortList(playerpool, "OBP", "H")
-			player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0)
-		else:
-			print("**AI LOG** - Best Price")
-			playerpool = alltime_lib.sortList(playerpool, "Price", "H")
-			player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0)
-	else:
-		print("**AI LOG** - Pitcher Selected")
-		print("**AI LOG** - Best Price")
-		playerpool = pitchers
-		#Sort out the playerpool array by Price for pitchers.
-		playerpool = alltime_lib.sortList(playerpool, "Price", "P")
-		if randrange(100) > 20 and position[0] > 0:
-			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
-		else:
-			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11)
-
-	return player_to_select
-
-
-def aiTen(position, hitters, pitchers, selected_list, roundCounter):
-	print("**AI LOG** - Focus: Doubles/Triples")
-	#Gets a random number.  For this, 50% of the time you go by Doubles.
-	#30% of the time, go by SLG.
-	#20% of the time, go by Triples.
-	randnum = randrange(100)
-	#Deciding on hitter (70%) or pitcher (30%).
-	sideThreshold = 70
-	side = randrange(100)
-	if roundCounter < 3:
-		sideThreshold = 90
-	if side < sideThreshold and roundCounter < 3:
-		player_to_select = firstRounds(70, hitters, pitchers, selected_list, position)
-	elif side < sideThreshold:
-		print("**AI LOG** - Hitter Selected")
-		#Putting the hitter pool in its own playerpool for the AI
-		playerpool = hitters
-		if randnum < 50:
-			print("**AI LOG** - Most Doubles")
-			playerpool = alltime_lib.sortList(playerpool, "2B", "H")
-			player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0)
-		elif randnum < 80 and randnum >= 50:
-			print("**AI LOG** - Best Slugging")
-			playerpool = alltime_lib.sortList(playerpool, "SLG", "H")
-			player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0)
-		else:
-			print("**AI LOG** - Most Triples")
-			playerpool = alltime_lib.sortList(playerpool, "3B", "H")
-			player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0)
-	else:
-		print("**AI LOG** - Pitcher Selected")
-		print("**AI LOG** - Best Price")
-		playerpool = pitchers
-		#Sort out the playerpool array by Price for pitchers.
-		playerpool = alltime_lib.sortList(playerpool, "Price", "P")
-		if randrange(100) > 20 and position[0] > 0:
-			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
-		else:
-			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11)
-
-	return player_to_select
-
-
-def aiEleven(position, hitters, pitchers, selected_list, roundCounter):
-	print("**AI LOG** - Focus: On Base Team")
-	#Gets a random number.  For this, 60% of the time you go by On Base.
-	#30% of the time, go by Batting Avg.
-	#10% of the time, go by Price.
-	randnum = randrange(100)
-	#Deciding on hitter (70%) or pitcher (30%).
-	sideThreshold = 70
-	side = randrange(100)
-	if roundCounter < 3:
-		sideThreshold = 90
-	if side < sideThreshold and roundCounter < 3:
-		player_to_select = firstRounds(60, hitters, pitchers, selected_list, position)
-	elif side < sideThreshold:
-		print("**AI LOG** - Hitter Selected")
-		#Putting the hitter pool in its own playerpool for the AI
-		playerpool = hitters
-		if randnum < 60:
-			print("**AI LOG** - Best On Base")
-			playerpool = alltime_lib.sortList(playerpool, "OBP", "H")
-			player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0)
-		elif randnum < 90 and randnum >= 60:
-			print("**AI LOG** - Best Avg")
-			playerpool = alltime_lib.sortList(playerpool, "Avg", "H")
-			player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0)
-		else:
-			print("**AI LOG** - Best Price")
-			playerpool = alltime_lib.sortList(playerpool, "Price", "H")
-			player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0)
-	else:
-		print("**AI LOG** - Pitcher Selected")
-		print("**AI LOG** - Best Price")
-		playerpool = pitchers
-		#Sort out the playerpool array by Price for pitchers.
-		playerpool = alltime_lib.sortList(playerpool, "Price", "P")
-		if randrange(100) > 20 and position[0] > 0:
-			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
-		else:
-			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11)
-
-	return player_to_select
-
-
-def aiTwelve(position, hitters, pitchers, selected_list, roundCounter):
-	print("**AI LOG** - Focus: Power Pitchers")
-	#Gets a random number.  For this, 70% of the time you go by Strikeouts.
-	#20% of the time, go by WHIP.
-	#10% of the time, go by Price.
-	randnum = randrange(100)
-	#Deciding on hitter (70%) or pitcher (30%).
-	sideThreshold = 70
-	side = randrange(100)
-	if roundCounter < 3:
-		sideThreshold = 90
-	if side < sideThreshold and roundCounter < 3:
-		player_to_select = firstRounds(30, hitters, pitchers, selected_list, position)
-	elif side < sideThreshold:
-		print("**AI LOG** - Pitcher Selected")
-		#Putting the pitchers pool in its own playerpool for the AI
-		playerpool = pitchers
-		rolerandom = randrange(100)
-		if randnum < 70:
-			print("**AI LOG** - Most Strikeouts")
-			playerpool = alltime_lib.sortList(playerpool, "K", "P")
-			if rolerandom < 80:
-				print("**AI LOG** - Select Starting Pitcher")
-				player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
-			else:
-				print("**AI LOG** - Select Relief Pitcher")
-				player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11)
-		elif randnum < 90 and randnum >= 70:
-			print("**AI LOG** - Best WHIP")
-			playerpool = alltime_lib.sortList(playerpool, "WHIP", "P")
-			if rolerandom < 80:
-				print("**AI LOG** - Select Starting Pitcher")
-				player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
-			else:
-				print("**AI LOG** - Select Relief Pitcher")
-				player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11)
-		else:
-			print("**AI LOG** - Best Price")
-			playerpool = alltime_lib.sortList(playerpool, "Price", "P")
-			if rolerandom < 80:
-				print("**AI LOG** - Select Starting Pitcher")
-				player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
-			else:
-				print("**AI LOG** - Select Relief Pitcher")
-				player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11)
-			
-	else:
-		print("**AI LOG** - Hitter Selected")
-		print("**AI LOG** - Best Price")
-		playerpool = hitters
-		#Sort out the playerpool array by Price for hitters.
-		playerpool = alltime_lib.sortList(playerpool, "Price", "H")
-		player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0)
-
-	return player_to_select
-
-
-def aiThirteen(position, hitters, pitchers, selected_list):
-	print("**AI LOG** - Focus: Lefty Dome")
-	#Gets a random number.  For this, 80% of the time you go by Price.
-	#10% of the time, go by Batting Avg.
-	#10% of the time, go by Slugging.
-	#Gets a random number.  For pitchers, 80% of the time you go by Price.
-	#10% of the time, go by ERA.
-	#10% of the time, go by WHIP.
-	randnum = randrange(100)
-	#Deciding on hitter (70%) or pitcher (30%).
-	sideThreshold = 50
-	side = randrange(100)
-	if side < sideThreshold:
-		print("**AI LOG** - Hitter Selected")
-		#Putting the hitter pool in its own playerpool for the AI
-		playerpool = hitters
-		handroll = randrange(100)
-		if randnum < 80:
-			print("**AI LOG** - Best Price")
-			playerpool = alltime_lib.sortList(playerpool, "Price", "H")
-			if handroll < 80:
-				player_to_select = topFourGrabs("H", playerpool, selected_list, position, 13)
-			else:
-				player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0)
-		elif randnum < 90 and randnum >= 80:
-			print("**AI LOG** - Best Avg")
-			playerpool = alltime_lib.sortList(playerpool, "Avg", "H")
-			if handroll < 80:
-				player_to_select = topFourGrabs("H", playerpool, selected_list, position, 13)
-			else:
-				player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0)
-		else:
-			print("**AI LOG** - Best Slugging")
-			playerpool = alltime_lib.sortList(playerpool, "SLG", "H")
-			if handroll < 80:
-				player_to_select = topFourGrabs("H", playerpool, selected_list, position, 13)
-			else:
-				player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0)
-	else:
-		print("**AI LOG** - Pitcher Selected")
-		#Putting the pitcher pool in its own playerpool for the AI
-		playerpool = pitchers
-		handroll = randrange(100)
-		if randnum < 80:
-			print("**AI LOG** - Best Price")
-			playerpool = alltime_lib.sortList(playerpool, "Price", "P")
-			if handroll < 80:
-				player_to_select = topFourGrabs("P", playerpool, selected_list, position, 13)
-			else:
-				player_to_select = topFourGrabs("P", playerpool, selected_list, position, 0)
-		elif randnum < 90 and randnum >= 80:
-			print("**AI LOG** - Best ERA")
-			playerpool = alltime_lib.sortList(playerpool, "ERA", "P")
-			if handroll < 80:
-				player_to_select = topFourGrabs("P", playerpool, selected_list, position, 13)
-			else:
-				player_to_select = topFourGrabs("P", playerpool, selected_list, position, 0)
-		else:
-			print("**AI LOG** - Best WHIP")
-			playerpool = alltime_lib.sortList(playerpool, "WHIP", "P")
-			if handroll < 80:
-				player_to_select = topFourGrabs("P", playerpool, selected_list, position, 13)
-			else:
-				player_to_select = topFourGrabs("P", playerpool, selected_list, position, 0)
-
-	return player_to_select
-
-def aiFourteen(position, hitters, pitchers, selected_list, roundCounter):
-	print("**AI LOG** - Focus: Balanced")
-	#Gets a random number.  For this, 35% of the time you go by Price.
-	#35% of the time, go by Batting Avg.
-	#30% of the time, go by Home Runs.
-	#Gets a random number.  For pitchers, 35% of the time you go by Price.
-	#35% of the time, go by ERA.
-	#30% of the time, go by Wins.
-	randnum = randrange(100)
-	#Deciding on hitter (70%) or pitcher (30%).
-	sideThreshold = 50
-	side = randrange(100)
-	if roundCounter < 3:
-		sideThreshold = 90
-	if side < sideThreshold and roundCounter < 3:
-		player_to_select = firstRounds(50, hitters, pitchers, selected_list, position)
-	elif side < sideThreshold:
-		print("**AI LOG** - Hitter Selected")
-		#Putting the hitter pool in its own playerpool for the AI
-		playerpool = hitters
-		if randnum < 35:
-			print("**AI LOG** - Best Price")
-			playerpool = alltime_lib.sortList(playerpool, "Price", "H")
-			player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0)
-		elif randnum < 70 and randnum >= 35:
-			print("**AI LOG** - Most Home Runs")
-			playerpool = alltime_lib.sortList(playerpool, "HHR", "H")
-			player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0)
-		else:
-			print("**AI LOG** - Best Average")
-			playerpool = alltime_lib.sortList(playerpool, "Avg", "H")
-			player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0)
-	else:
-		print("**AI LOG** - Pitcher Selected")
-		#Putting the pitcher pool in its own playerpool for the AI
-		playerpool = pitchers
-		if randnum < 35:
-			print("**AI LOG** - Best Price")
-			playerpool = alltime_lib.sortList(playerpool, "Price", "P")
-			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 0)
-		elif randnum < 70 and randnum >= 35:
-			print("**AI LOG** - Best ERA")
-			playerpool = alltime_lib.sortList(playerpool, "ERA", "P")
-			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 0)
-		else:
-			print("**AI LOG** - Most Wins")
-			playerpool = alltime_lib.sortList(playerpool, "W", "P")
-			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 0)
-
-	return player_to_select
-
-
-def aiFifteen(position, hitters, pitchers, selected_list, roundCounter):
-	print("**AI LOG** - Focus: Up the Middle")
-	#Gets a random number.  For this, 60% of the time you go by Price.
-	#20% of the time, go by Batting Avg.
-	#20% of the time, go by Slugging.
-	randnum = randrange(100)
-	#Deciding on hitter (70%) or pitcher (30%).
-	sideThreshold = 50
-	side = randrange(100)
-	if roundCounter < 3:
-		sideThreshold = 90
-	if side < sideThreshold and roundCounter < 3:
-		player_to_select = firstRounds(50, hitters, pitchers, selected_list, position)
-	elif side < sideThreshold:
-		print("**AI LOG** - Hitter Selected")
-		#Putting the hitter pool in its own playerpool for the AI
-		playerpool = hitters
-		handroll = randrange(100)
-		if randnum < 60:
-			print("**AI LOG** - Best Price")
-			playerpool = alltime_lib.sortList(playerpool, "Price", "H")
-			if handroll < 65:
-				player_to_select = topFourGrabs("H", playerpool, selected_list, position, 14)
-			else:
-				player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0)
-		elif randnum < 80 and randnum >= 60:
-			print("**AI LOG** - Best Avg")
-			playerpool = alltime_lib.sortList(playerpool, "Avg", "H")
-			if handroll < 65:
-				player_to_select = topFourGrabs("H", playerpool, selected_list, position, 14)
-			else:
-				player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0)
-		else:
-			print("**AI LOG** - Best Slugging")
-			playerpool = alltime_lib.sortList(playerpool, "SLG", "H")
-			if handroll < 65:
-				player_to_select = topFourGrabs("H", playerpool, selected_list, position, 14)
-			else:
-				player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0)
-	else:
-		print("**AI LOG** - Pitcher Selected")
-		print("**AI LOG** - Best Price")
-		playerpool = pitchers
-		#Sort out the playerpool array by Price for pitchers.
-		playerpool = alltime_lib.sortList(playerpool, "Price", "P")
-		if randrange(100) > 20 and position[0] > 0:
-			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
-		else:
-			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11)
-
-	return player_to_select
-
-
-def aiSixteen(position, hitters, pitchers, selected_list, roundCounter):
-	print("**AI LOG** - Focus: Clutch Hitters")
-	#Gets a random number.  For this, 50% of the time you go by RBI.
-	#30% of the time, go by Slugging.
-	#20% of the time, go by Price.
-	randnum = randrange(100)
-	#Deciding on hitter (70%) or pitcher (30%).
-	sideThreshold = 60
-	side = randrange(100)
-	if roundCounter < 3:
-		sideThreshold = 90
-	if side < sideThreshold and roundCounter < 3:
-		player_to_select = firstRounds(60, hitters, pitchers, selected_list, position)
-	elif side < sideThreshold:
-		print("**AI LOG** - Hitter Selected")
-		#Putting the hitter pool in its own playerpool for the AI
-		playerpool = hitters
-		if randnum < 50:
-			print("**AI LOG** - Most RBI")
-			playerpool = alltime_lib.sortList(playerpool, "RBI", "H")
-			player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0)
-		elif randnum < 80 and randnum >= 50:
-			print("**AI LOG** - Best Slugging")
-			playerpool = alltime_lib.sortList(playerpool, "SLG", "H")
-			player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0)
-		else:
-			print("**AI LOG** - Best Price")
-			playerpool = alltime_lib.sortList(playerpool, "Price", "H")
-			player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0)
-
-	else:
-		print("**AI LOG** - Pitcher Selected")
-		print("**AI LOG** - Best Price")
-		playerpool = pitchers
-		#Sort out the playerpool array by Price for pitchers.
-		playerpool = alltime_lib.sortList(playerpool, "Price", "P")
-		if randrange(100) > 20 and position[0] > 0:
-			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
-		else:
-			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11)
-
-	return player_to_select
-'''
 
 def autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys):
 	sideThreshold = 50
@@ -908,11 +139,16 @@ def autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, f
 	elif side < sideThreshold:
 		key_index = weighted_random_choice([0, 1, 2], [70, 20, 10])  # Weighted random choice for key_index
 		key_str = keys[key_index]  # Select the key using the randomly chosen index
-		print(f"**AI LOG** - Hitter Selected ({key_str})")
+		logstr = f"**AI LOG** - Hitter Selected ({key_str})"
+		with open('log.txt', 'a') as file:
+			file.write(logstr + '\n')
+		#print(f"**AI LOG** - Hitter Selected ({key_str})")
 		playerpool = hitters
 		rolerandom = random.randrange(100)
-
-		print(f"**AI LOG** - Category: {key_str}")
+		logstr = f"**AI LOG** - Category: {key_str}"
+		with open('log.txt', 'a') as file:
+			file.write(logstr + '\n')
+		#print(f"**AI LOG** - Category: {key_str}")
 		playerpool = alltime_lib.sortList(playerpool, key_str, "H")
 		if focus < 15 and focus > 11:
 			if randrange(100) < 65:
@@ -924,14 +160,21 @@ def autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, f
 	else:
 		key_index = weighted_random_choice([3, 4, 5], [70, 20, 10])  # Weighted random choice for key_index
 		key_str = keys[key_index]  # Select the key using the randomly chosen index
-		print(f"**AI LOG** - Pitcher Selected ({key_str})")
+		logstr = f"**AI LOG** - Pitcher Selected ({key_str})"
+		with open('log.txt', 'a') as file:
+			file.write(logstr + '\n')
+		#print(f"**AI LOG** - Pitcher Selected ({key_str})")
 		playerpool = pitchers
 		rolerandom = random.randrange(100)
 		if rolerandom < 80 and position[1] > 0:
-			print("**AI LOG** - Select Starting Pitcher")
+			with open('log.txt', 'a') as file:
+				file.write("**AI LOG** - Select Starting Pitcher" + '\n')
+			#print("**AI LOG** - Select Starting Pitcher")
 			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
 		else:
-			print("**AI LOG** - Select Relief Pitcher")
+			with open('log.txt', 'a') as file:
+				file.write("**AI LOG** - Select Relief Pitcher" + '\n')
+			#print("**AI LOG** - Select Relief Pitcher")
 			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11)
 	return player_to_select
 
@@ -948,15 +191,22 @@ def autoSelectPitcher(position, hitters, pitchers, selected_list, roundCounter, 
 	elif side < sideThreshold:
 		key_index = weighted_random_choice([0, 1, 2], [70, 20, 10])  # Weighted random choice for key_index
 		key_str = keys[key_index]  # Select the key using the randomly chosen index
-		print(f"**AI LOG** - Pitcher Selected ({key_str})")
+		logstr = f"**AI LOG** - Pitcher Selected ({key_str})"
+		with open('log.txt', 'a') as file:
+			file.write(logstr + '\n')
+		#print(f"**AI LOG** - Pitcher Selected ({key_str})")
 		playerpool = pitchers
 		rolerandom = random.randrange(100)
-
-		print(f"**AI LOG** - Category: {key_str}")
+		logstr = f"**AI LOG** - Category: {key_str}"
+		with open('log.txt', 'a') as file:
+			file.write(logstr + '\n')
+		#print(f"**AI LOG** - Category: {key_str}")
 		playerpool = alltime_lib.sortList(playerpool, key_str, "P")
 
 		if rolerandom < 80 and position[1] > 0:
-			print("**AI LOG** - Select Starting Pitcher")
+			with open('log.txt', 'a') as file:
+				file.write("**AI LOG** - Select Starting Pitcher" + '\n')
+			#print("**AI LOG** - Select Starting Pitcher")
 			if focus == 13:
 				if randrange(100) < 65:
 					player_to_select = topFourGrabs("P", playerpool, selected_list, position, focus)
@@ -965,12 +215,17 @@ def autoSelectPitcher(position, hitters, pitchers, selected_list, roundCounter, 
 			else:
 				player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
 		else:
-			print("**AI LOG** - Select Relief Pitcher")
+			with open('log.txt', 'a') as file:
+				file.write("**AI LOG** - Select Relief Pitcher" + '\n')
+			#print("**AI LOG** - Select Relief Pitcher")
 			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11)
 	else:
 		key_index = weighted_random_choice([3, 4, 5], [70, 20, 10])  # Weighted random choice for key_index
 		key_str = keys[key_index]  # Select the key using the randomly chosen index
-		print(f"**AI LOG** - Hitter Selected ({key_str})")
+		logstr = f"**AI LOG** - Hitter Selected ({key_str})"
+		with open('log.txt', 'a') as file:
+			file.write(logstr + '\n')
+		#print(f"**AI LOG** - Hitter Selected ({key_str})")
 		playerpool = hitters
 		player_to_select = topFourGrabs("H", playerpool, selected_list, position, focus)
 
