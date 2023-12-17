@@ -300,7 +300,7 @@ if __name__ == "__main__":
 	htmlcode += "border-collapse: collapse;width: 100%;font-size: 12px;}th {padding-top: 4px;padding-bottom: 4px;"
 	htmlcode += "text-align: left;font-weight: bold;}tr:nth-child(even){background-color: #f2f2f2;}tr:hover {background-color: #ddd;}"
 	htmlcode += "</style></head><body><a href='#log'>Draft Log</a><p>"
-	htmlcode += "<table><caption>Standings</caption><th>R</th><th>HR</th><th>RBI</th><th>SB/CS</th><th>Avg</th><th>Defense</th>"
+	htmlcode += "<table><caption>Standings</caption><th title='Total Runs'>R</th><th title='Total Home Runs'>HR</th><th title='Total RBI'>RBI</th><th title='Takes Steals minus Caught Totals'>SB/CS</th><th title='Total Team OPS'>OPS</th><th  title='Measures best defense ratings'>Defense</th>"
 	htmlcode += "<tr>"
 	
 	returned_html1, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "R", "H", "Runs", numteams)
@@ -311,7 +311,7 @@ if __name__ == "__main__":
 	returned_html6, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "Defense", "H", "Defense", numteams)
 	htmlcode = htmlcode + returned_html1 + returned_html2 + returned_html3 + returned_html4 + returned_html5 + returned_html6
 	htmlcode += "</tr></table>"
-	htmlcode += "<table><th>W/L</th><th>Strikeouts</th><th>Saves</th><th>ERA</th><th>WHIP</th><th>Price</th><tr>"
+	htmlcode += "<table><th title='Takes Wins minus Losses Total'>W/L</th><th title='Total Strikeouts'>Strikeouts</th><th title='Total Saves'>Saves</th><th title='Total Team ERA'>ERA</th><th title='Total Team WHIP'>WHIP</th><th title='Total Average Salary'>Price</th><tr>"
 	returned_html1, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "W", "P", "Wins", numteams)
 	returned_html2, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "K", "P", "Strikeouts", numteams)
 	returned_html3, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "SV", "P", "Saves", numteams)
