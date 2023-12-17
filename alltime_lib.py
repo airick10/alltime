@@ -739,29 +739,92 @@ def getDraftPool(hitters, pitchers, type, sortvalue, selected_list):
 def sortTeamCat(league, hitters, pitchers, cat, type):
 	catDict = {}
 	TotalCat = 0
-	if type == "H":
-		pos_ary = ['C1', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'C2', 'UT1', 'UT2', 'UT3', 'UT4', 'UT5', 'UT6']
+	TotalCatabip = 0
+	if cat != "Price":
+		if type == "H":
+			pos_ary = ['C1', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'C2', 'UT1', 'UT2', 'UT3', 'UT4', 'UT5', 'UT6']
+			for team in league:
+				for key in pos_ary:
+					for player in hitters:
+						if team[key] == player['ID']:
+							if cat == "OPS":
+								TotalCat += player['OBP'] + player['SLG']
+							elif cat == "Defense":
+								if player['DP1'] == "6" or player['DP1'] == "4" or player['DP1'] == "8":
+									TotalCat += int(player['DR1']) * 2
+								else:
+									TotalCat += int(player['DR1'])
+							elif cat == "SB":
+								TotalCat += player['SB'] - player['CS']
+							else:
+								TotalCat += player[cat]
+				if cat == "OPS":
+					TotalCat = TotalCat / 15
+					TotalCat = float("{:.3f}".format(TotalCat))
+					catDict.update({team['TeamName']: TotalCat})
+				else: 
+					catDict.update({team['TeamName']: round(TotalCat)})
+				TotalCat = 0
+				TotalCatabip = 0
+		elif type == "P":
+			pos_ary = ['SP1', 'SP2', 'SP3', 'SP4', 'SP5', 'RP1', 'RP2', 'RP3', 'RP4', 'RP5']
+			for team in league:
+				for key in pos_ary:
+					for player in pitchers:
+						if team[key] == player['ID']:
+							if cat == "ERA":
+								TotalCat += player["ER"]
+								TotalCatabip += player['IP']
+							elif cat == "WHIP":
+								TotalCat += player['BB'] + player['H']
+								TotalCatabip += player['IP']
+							elif cat == "W":
+								TotalCat += player['W'] - player['L']
+							else:
+								TotalCat += player[cat]
+				if cat == "ERA":
+					TotalCat = (TotalCat / TotalCatabip) * 9
+					TotalCat = float("{:.2f}".format(TotalCat))
+					catDict.update({team['TeamName']: TotalCat})
+				elif cat == "WHIP":
+					TotalCat = TotalCat / TotalCatabip
+					TotalCat = float("{:.3f}".format(TotalCat))
+					catDict.update({team['TeamName']: TotalCat})
+				else:
+					catDict.update({team['TeamName']: round(TotalCat)})
+				TotalCat = 0
+				TotalCatabip = 0
+	else:
+		pos_aryh = ['C1', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'C2', 'UT1', 'UT2', 'UT3', 'UT4', 'UT5', 'UT6']
+		pos_aryp = ['SP1', 'SP2', 'SP3', 'SP4', 'SP5', 'RP1', 'RP2', 'RP3', 'RP4', 'RP5']
 		for team in league:
-			for key in pos_ary:
+			for key in pos_aryh:
 				for player in hitters:
 					if team[key] == player['ID']:
-						TotalCat += player[cat]
-			TotalCat = TotalCat / 15
-			catDict.update({team['TeamName']: round(TotalCat)})
-			TotalCat = 0
-	else:
-		pos_ary = ['SP1', 'SP2', 'SP3', 'SP4', 'SP5', 'RP1', 'RP2', 'RP3', 'RP4', 'RP5']
-		for team in league:
-			for key in pos_ary:
+						TotalCat += player['Price']
+			for key in pos_aryp:
 				for player in pitchers:
 					if team[key] == player['ID']:
-						TotalCat += player[cat]
-			TotalCat = TotalCat / 10
+						TotalCat += player['Price']
+			TotalCat = TotalCat / 25
 			catDict.update({team['TeamName']: round(TotalCat)})
-			TotalCat = 0
+
 	return catDict
 
 
+def fantasyTable(league, hitters, pitchers, standings_dict, cat, btype, label, numteams):
+	DictH = sortTeamCat(league, hitters, pitchers, cat, btype)
+	if label != "Defense" and label != "ERA" and label != "WHIP":
+		DictH = dict(sorted(DictH.items(), key=lambda item: item[1], reverse=True))
+	else: 
+		DictH = dict(sorted(DictH.items(), key=lambda item: item[1]))
+	htmlcode = "<td><ol>"
+	for k,v in DictH.items():
+		standings_dict[k] += numteams
+		htmlcode += f"<li>{k}: {v}</li>"
+		numteams -= 1
+	htmlcode += "</ol></td>"
+	return htmlcode, standings_dict
 
 
 
@@ -805,7 +868,7 @@ def teamHTML(team, hitters, pitchers):
 
 
 def getLogFormat(league, hitters, pitchers, team_ary, selected_ary, numteams):
-	htmlcode = "<div>"
+	htmlcode = "<div id='log'>"
 	counter = 0
 	rdCounter = 1
 	rdLabel = 1

@@ -286,22 +286,45 @@ if __name__ == "__main__":
 		draftcounter += 1
 
 
-	priceDictH = alltime_lib.sortTeamCat(league, hitters, pitchers, "Price", "H")
-	priceDictP = alltime_lib.sortTeamCat(league, hitters, pitchers, "Price", "P")
-	priceDictH = dict(sorted(priceDictH.items(), key=lambda item: item[1], reverse=True))
-	priceDictP = dict(sorted(priceDictP.items(), key=lambda item: item[1], reverse=True))
+	#priceDictH = alltime_lib.sortTeamCat(league, hitters, pitchers, "Price", "H")
+	#priceDictP = alltime_lib.sortTeamCat(league, hitters, pitchers, "Price", "P")
+	#priceDictH = dict(sorted(priceDictH.items(), key=lambda item: item[1], reverse=True))
+	#priceDictP = dict(sorted(priceDictP.items(), key=lambda item: item[1], reverse=True))
+	standings_dict = {}  # Create an empty dictionary
+
+	for team in league:
+		key = team['TeamName']
+		standings_dict[key] = 0
 	htmlcode = "<html><body>"
 	htmlcode += "<style>caption {font-weight: bold;font-size: 14px;}table{font-family: Arial, Helvetica, sans-serif;"
 	htmlcode += "border-collapse: collapse;width: 100%;font-size: 12px;}th {padding-top: 4px;padding-bottom: 4px;"
 	htmlcode += "text-align: left;font-weight: bold;}tr:nth-child(even){background-color: #f2f2f2;}tr:hover {background-color: #ddd;}"
-	htmlcode += "</style></head><body>"
-	htmlcode += "<h3>Standings - Hitters</h3><p><ol>"
-	for k,v in priceDictH.items():
+	htmlcode += "</style></head><body><a href='#log'>Draft Log</a><p>"
+	htmlcode += "<table><caption>Standings</caption><th>R</th><th>HR</th><th>RBI</th><th>SB/CS</th><th>Avg</th><th>Defense</th>"
+	htmlcode += "<tr>"
+	
+	returned_html1, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "R", "H", "Runs", numteams)
+	returned_html2, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "HR", "H", "Home Runs", numteams)
+	returned_html3, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "RBI", "H", "RBI", numteams)
+	returned_html4, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "SB", "H", "Steals", numteams)
+	returned_html5, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "OPS", "H", "OPS", numteams)
+	returned_html6, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "Defense", "H", "Defense", numteams)
+	htmlcode = htmlcode + returned_html1 + returned_html2 + returned_html3 + returned_html4 + returned_html5 + returned_html6
+	htmlcode += "</tr></table>"
+	htmlcode += "<table><th>W/L</th><th>Strikeouts</th><th>Saves</th><th>ERA</th><th>WHIP</th><th>Price</th><tr>"
+	returned_html1, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "W", "P", "Wins", numteams)
+	returned_html2, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "K", "P", "Strikeouts", numteams)
+	returned_html3, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "SV", "P", "Saves", numteams)
+	returned_html4, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "ERA", "P", "ERA", numteams)
+	returned_html5, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "WHIP", "P", "WHIP", numteams)
+	returned_html6, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "Price", "P", "Price", numteams)
+	htmlcode = htmlcode + returned_html1 + returned_html2 + returned_html3 + returned_html4 + returned_html5 + returned_html6
+	htmlcode += "</tr></table><p><hr><p>"
+	standings_dict = dict(sorted(standings_dict.items(), key=lambda item: item[1], reverse=True))
+	htmlcode += "<h3>Complete Standings:</h3><p><ol>"
+	for k,v in standings_dict.items():
 		htmlcode += f"<li>{k}: {v}</li>"
-	htmlcode += "</ol><p><h3>Standings - Pitchers</h3><ol>"
-	for k,v in priceDictP.items():
-		htmlcode += f"<li>{k}: {v}</li>"
-	htmlcode += "</ol><p><hr><p>"
+	htmlcode += "</ol>"
 	for team in league:
 		enddraft = True
 		print("Showing Rosters")
