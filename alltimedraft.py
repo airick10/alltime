@@ -20,16 +20,6 @@ def clearScreen():
         # Fall back to printing newlines if other methods fail
         print('\n' * 100)
 
-'''
-def clearScreen():
-    # For Windows
-    if os.name == 'nt':
-        _ = os.system('cls')
-    # For Mac and Linux (os.name: 'posix')
-    else:
-        _ = os.system('clear')
-'''
-
 def inputCheck(initial, rangelow, rangehigh):
 	#Ensures the user puts in a value that is legit (an integer) and withen the range asked for.
 	desired_value = input(initial)
@@ -162,7 +152,7 @@ if __name__ == "__main__":
 				choice = alltime_lib.draftMenu()
 				clearScreen()
 				if choice == 1:
-					select = alltime_lib.getDraftPool(hitters, pitchers, "H", "Price", selected_list)
+					select = alltime_lib.getDraftPool(hitters, pitchers, "H", "None", selected_list)
 					if select > 0:
 						clearScreen()
 						player_to_draft = alltime_lib.playerDetails(hitters, pitchers, select, False)
@@ -171,7 +161,7 @@ if __name__ == "__main__":
 					
 					
 				if choice == 2:
-					select = alltime_lib.getDraftPool(hitters, pitchers, "P", "Price", selected_list)
+					select = alltime_lib.getDraftPool(hitters, pitchers, "P", "None", selected_list)
 					if select > 0:
 						clearScreen()
 						player_to_draft = alltime_lib.playerDetails(hitters, pitchers, select, False)
@@ -300,25 +290,27 @@ if __name__ == "__main__":
 	htmlcode += "border-collapse: collapse;width: 100%;font-size: 12px;}th {padding-top: 4px;padding-bottom: 4px;"
 	htmlcode += "text-align: left;font-weight: bold;}tr:nth-child(even){background-color: #f2f2f2;}tr:hover {background-color: #ddd;}"
 	htmlcode += "</style></head><body><a href='#log'>Draft Log</a><p>"
-	htmlcode += "<table><caption>Standings</caption><th title='Total Runs'>R</th><th title='Total Home Runs'>HR</th><th title='Total RBI'>RBI</th><th title='Takes Steals minus Caught Totals'>SB/CS</th><th title='Total Team OPS'>OPS</th><th  title='Measures best defense ratings'>Defense</th>"
+	htmlcode += "<table><caption>Standings</caption><th title='Total Runs'>R</th><th title='Total Home Runs'>HR</th><th title='Total RBI'>RBI</th><th title='Takes Steals minus Caught Totals'>SB/CS</th><th title='Total Strikeouts minus Walks'>K/BB</th><th title='Total Team OPS'>OPS</th><th  title='Measures best defense ratings'>Defense</th>"
 	htmlcode += "<tr>"
 	
 	returned_html1, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "R", "H", "Runs", numteams)
 	returned_html2, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "HR", "H", "Home Runs", numteams)
 	returned_html3, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "RBI", "H", "RBI", numteams)
 	returned_html4, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "SB", "H", "Steals", numteams)
-	returned_html5, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "OPS", "H", "OPS", numteams)
-	returned_html6, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "Defense", "H", "Defense", numteams)
-	htmlcode = htmlcode + returned_html1 + returned_html2 + returned_html3 + returned_html4 + returned_html5 + returned_html6
+	returned_html5, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "K", "H", "StrikeoutsH", numteams)
+	returned_html6, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "OPS", "H", "OPS", numteams)
+	returned_html7, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "Defense", "H", "Defense", numteams)
+	htmlcode = htmlcode + returned_html1 + returned_html2 + returned_html3 + returned_html4 + returned_html5 + returned_html6 + returned_html7
 	htmlcode += "</tr></table>"
-	htmlcode += "<table><th title='Takes Wins minus Losses Total'>W/L</th><th title='Total Strikeouts'>Strikeouts</th><th title='Total Saves'>Saves</th><th title='Total Team ERA'>ERA</th><th title='Total Team WHIP'>WHIP</th><th title='Total Average Salary'>Price</th><tr>"
+	htmlcode += "<table><th title='Takes Wins minus Losses Total'>W/L</th><th title='Total Strikeouts Minus Walks'>Strikeouts</th><th title='Total Shutouts'>Shutouts</th><th title='Total Saves'>Saves</th><th title='Total Team ERA'>ERA</th><th title='Total Team WHIP'>WHIP</th><th title='Total Average Salary'>Price</th><tr>"
 	returned_html1, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "W", "P", "Wins", numteams)
 	returned_html2, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "K", "P", "Strikeouts", numteams)
-	returned_html3, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "SV", "P", "Saves", numteams)
-	returned_html4, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "ERA", "P", "ERA", numteams)
-	returned_html5, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "WHIP", "P", "WHIP", numteams)
-	returned_html6, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "Price", "P", "Price", numteams)
-	htmlcode = htmlcode + returned_html1 + returned_html2 + returned_html3 + returned_html4 + returned_html5 + returned_html6
+	returned_html3, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "SHO", "P", "Shutouts", numteams)
+	returned_html4, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "SV", "P", "Saves", numteams)
+	returned_html5, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "ERA", "P", "ERA", numteams)
+	returned_html6, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "WHIP", "P", "WHIP", numteams)
+	returned_html7, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "Price", "P", "Price", numteams)
+	htmlcode = htmlcode + returned_html1 + returned_html2 + returned_html3 + returned_html4 + returned_html5 + returned_html6 + returned_html7
 	htmlcode += "</tr></table><p><hr><p>"
 	standings_dict = dict(sorted(standings_dict.items(), key=lambda item: item[1], reverse=True))
 	htmlcode += "<h3>Complete Standings:</h3><p><ol>"
