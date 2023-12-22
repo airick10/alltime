@@ -2,6 +2,7 @@ import alltimedraft
 import aipicks
 import random
 import json
+from tabulate import tabulate
 
 def gatherPlayers(jf, type):
 	with open(jf) as fp:
@@ -28,52 +29,11 @@ def gatherPlayers(jf, type):
 			record["Avg"] = "{:.3f}".format(record["Avg"]).lstrip('0')
 			record["OBP"] = "{:.3f}".format(record["OBP"]).lstrip('0')
 			record["SLG"] = "{:.3f}".format(record["SLG"]).lstrip('0')
-
-
-		'''
-			record["G"] = int(record["G"])
-			record["AB"] = int(record["AB"])
-			record["R"] = int(record["R"])
-			record["H"] = int(record["H"])
-			record["2B"] = int(record["2B"])
-			record["3B"] = int(record["3B"])
-			record["HR"] = int(record["HR"])
-			record["RBI"] = int(record["RBI"])
-			record["BB"] = int(record["BB"])
-			record["K"] = int(record["K"])
-			record["HB"] = int(record["HB"])
-			record["SB"] = int(record["SB"])
-			record["CS"] = int(record["CS"])
-			record["Avg"] = float(record["Avg"])
-			record["OBP"] = float(record["OBP"])
-			record["SLG"] = float(record["SLG"])
-			record["Price"] = int(record["Price"])
-		'''
 	else:
 		for record in players:
 			record["ID"] = str(record["ID"])
 			record["ERA"] = "{:.2f}".format(record["ERA"]).lstrip('0')
 			record["WHIP"] = "{:.3f}".format(record["WHIP"]).lstrip('0')
-		'''
-			record["G"] = int(record["G"])
-			record["GS"] = int(record["GS"])
-			record["CG"] = int(record["CG"])
-			record["SHO"] = int(record["SHO"])
-			record["W"] = int(record["W"])
-			record["L"] = int(record["L"])
-			record["SV"] = int(record["SV"])
-			record["IP"] = float(record["IP"])
-			record["H"] = int(record["H"])
-			record["ER"] = int(record["ER"])
-			record["HR"] = int(record["HR"])
-			record["BB"] = int(record["BB"])
-			record["K"] = int(record["K"])
-			record["WP"] = int(record["WP"])
-			record["BK"] = int(record["BK"])
-			record["ERA"] = float(record["ERA"])
-			record["WHIP"] = float(record["WHIP"])
-			record["Price"] = int(record["Price"])
-		'''
 	return players
 	
 def setUpTeams(numteams, randomDraft, humannum):
@@ -89,12 +49,28 @@ def setUpTeams(numteams, randomDraft, humannum):
     counter = 1
     draftCounter = 0
     aiSequenceSlot = 1
+
+    randomNameChoice = alltimedraft.inputCheck("Press 1 to assign your own team names.  Press 2 to assign random team names. ", 1, 2)
+    if randomNameChoice == 1:
+    	randomTeamNames = True
+    else:
+    	randomTeamNames = False
+    	teamnames = ["Wizards", "Warriors", "Barons", "Vipers", "Expos", 
+    	"Packers", "Buccaneers", "Panthers", "Generals", "Storm", "Rockets", 
+    	"Sharks", "Hawks", "Bombers", "Chargers", "Mavericks"]
+    	selected_teams = random.sample(teamnames, numteams + 1)
+
     for team in league:
         # TeamID
         team["TeamID"] = counter
         team["AIFocus"] = aiFocus()
-        if humannum > 0: 
-        	team["TeamName"] = input(f"Human Team {team['TeamID']}: What do you want for the team name? ")
+        if humannum > 0:
+        	if randomTeamNames: 
+        		team["TeamName"] = input(f"Human Team {team['TeamID']}: What do you want for the team name? ")
+        	else:
+        		team["TeamName"] = selected_teams[counter]
+        		print(f"Human Team Name: {selected_teams[counter]}")
+        		input("Press any key to continue")
         	team["Human"] = True
         	team["TeamName"] = team["TeamName"].capitalize()
         	while team["TeamName"] in teamnameary:
@@ -102,7 +78,10 @@ def setUpTeams(numteams, randomDraft, humannum):
         		team["TeamName"] = team["TeamName"].capitalize()
         	teamnameary.append(team["TeamName"])
         else:
-        	team["TeamName"] = input(f"AI Team {team['TeamID']}: What do you want for the team name? ")
+        	if randomTeamNames:
+        		team["TeamName"] = input(f"AI Team {team['TeamID']}: What do you want for the team name? ")
+        	else:
+        		team["TeamName"] = selected_teams[counter]
         	team["Human"] = False
         	team["TeamName"] = team["TeamName"].capitalize()
         	while team["TeamName"] in teamnameary:
@@ -213,7 +192,7 @@ def getDraftLog(league, numteams):
 	return draftLog
 		
 	
-def viewTeam(league, hitters, pitchers, select, enddraft):
+def viewTeam(league, hitters, pitchers, select):
 	counter = 0
 	idSelected = False
 	choicearray = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
@@ -222,7 +201,7 @@ def viewTeam(league, hitters, pitchers, select, enddraft):
 	#Because an array starts at 0, I'm turning record['TeamID'] into an int and subtracting by 1.
 	for record in league:
 		if record['DraftSlot'] == select:
-			print(f"{record['TeamName']} - {record['TeamID']}")
+			print(f"{record['TeamName']}")
 			teamid = int(record['TeamID']) - 1	
 	#league[select]['C1']
 	print("")
@@ -260,10 +239,9 @@ def viewTeam(league, hitters, pitchers, select, enddraft):
 				print(f"{counter}. {k}")
 			counter += 1
 	
-	if not enddraft:
-		choice = alltimedraft.inputCheck("Choose a player to view details.  Press 0 to go back to the Draft Menu ", 0, 27)
-		while choicearray[choice] == 0 and choice != 0:
-			choice = alltimedraft.inputCheck("Player is unassigned at this slot.  Try again.  Choose a player to view details.  Press 0 to go back to the Draft Menu ", 0, 27)
+	choice = alltimedraft.inputCheck("Choose a player to view details.  Press 0 to go back to the Draft Menu ", 0, 27)
+	while choicearray[choice] == 0 and choice != 0:
+		choice = alltimedraft.inputCheck("Player is unassigned at this slot.  Try again.  Choose a player to view details.  Press 0 to go back to the Draft Menu ", 0, 27)
 	else:
 		choice = 0
 
@@ -551,12 +529,6 @@ def assignToRoster(league, hitters, pitchers, player_to_draft, draftSlotNum, pos
 	return league
 
 
-def getDraftPoolList(id, firstName, lastName, team, choicearray, counter):
-		print(f"{counter}. {firstName} {lastName} - {team}")
-		playerid = int(id)
-		choicearray.append(playerid)
-		return choicearray
-		
 def positionList():
 		position_ary = [0,False]
 		print("------------")
@@ -693,6 +665,19 @@ def sortList(playerpool, sortvalue, type):
 		return playerpool
 
 
+def getDraftPoolList(player, choicearray, counter, playertype):
+	if playertype == "H":
+		position = alltimedraft.posConvert(player['DP1'])
+		print(f"{counter}. {player['FirstName']} {player['LastName']} ({player['Team']}): {player['Bat']}/{position} - {player['Avg']}/{player['OBP']}/{player['SLG']}")
+		playerid = int(player['ID'])
+		choicearray.append(playerid)
+	else:
+		position = alltimedraft.posConvert(player['Role'])
+		print(f"{counter}. {player['FirstName']} {player['LastName']} ({player['Team']}): {player['Throw']}/{position}   {player['W']}-{player['L']} - {player['ERA']} ERA / {player['WHIP']} WHIP")
+		playerid = int(player['ID'])
+		choicearray.append(playerid)
+	return choicearray
+
 
 def getDraftPool(hitters, pitchers, type, sortvalue, selected_list):
 	#X is the number of players displayed at once.
@@ -710,7 +695,7 @@ def getDraftPool(hitters, pitchers, type, sortvalue, selected_list):
   
   #Counter actually measures the hitters/pitchers array and counts regardless of if a player is picked.  It keeps track of the actual source array.
   #Listcounter only increments when a player is available and gives the user a 1-30 choice.  Thus, the loop is based off that.
-	counter = 1
+	counter = 0
 	listcounter = 1
 	if sortvalue == "Position":
 		position = positionList()
@@ -735,15 +720,15 @@ def getDraftPool(hitters, pitchers, type, sortvalue, selected_list):
 				if sortvalue == "Position" and position[1]:
 					position[0] = str(position[0])
 					if hitters[counter]['DP1'] == position[0]:
-						choicearray = getDraftPoolList(hitters[counter]['ID'], hitters[counter]['FirstName'], hitters[counter]['LastName'], hitters[counter]['Team'], choicearray, listcounter)
+						choicearray = getDraftPoolList(hitters[counter], choicearray, listcounter, "H")
 						listcounter += 1
 				elif sortvalue == "Position" and not position[1]:
 					if hitters[counter]['DP1'] == position[0] or hitters[counter]['DP2'] == position[0] or hitters[counter]['DP3'] == position[0] or hitters[counter]['DP4'] == position[0] or hitters[counter]['DP5'] == position[0] or hitters[counter]['DP6'] == position[0] or hitters[counter]['DP7'] == position[0] or hitters[counter]['DP8'] == position[0]:
-						choicearray = getDraftPoolList(hitters[counter]['ID'], hitters[counter]['FirstName'], hitters[counter]['LastName'], hitters[counter]['Team'], choicearray, listcounter)
+						choicearray = getDraftPoolList(hitters[counter], choicearray, listcounter, "H")
 						listcounter += 1		
 				#IF POSITION CHECK ISN'T SELECTED
 				else:
-					choicearray = getDraftPoolList(hitters[counter]['ID'], hitters[counter]['FirstName'], hitters[counter]['LastName'], hitters[counter]['Team'], choicearray, listcounter)
+					choicearray = getDraftPoolList(hitters[counter], choicearray, listcounter, "H")
 					listcounter += 1
 			counter += 1
 	else:
@@ -753,10 +738,10 @@ def getDraftPool(hitters, pitchers, type, sortvalue, selected_list):
 			if pitchers[counter]['ID'] not in selected_list:
 				if sortvalue == "Position":
 					if pitchers[counter]['Role'] == position[0]:
-						chiocearray = getDraftPoolList(pitchers[counter]['ID'], pitchers[counter]['FirstName'], pitchers[counter]['LastName'], pitchers[counter]['Team'], choicearray, listcounter)
+						chiocearray = getDraftPoolList(pitchers[counter], choicearray, listcounter, "P")
 						listcounter += 1
 				else:
-					choicearray = getDraftPoolList(pitchers[counter]['ID'], pitchers[counter]['FirstName'], pitchers[counter]['LastName'], pitchers[counter]['Team'], choicearray, listcounter)
+					chiocearray = getDraftPoolList(pitchers[counter], choicearray, listcounter, "P")
 					listcounter += 1
 			counter += 1
 	
@@ -859,30 +844,51 @@ def fantasyTable(league, hitters, pitchers, standings_dict, cat, btype, label, n
 
 
 
-def teamHTML(team, hitters, pitchers):
+def teamHTML(team, hitters, pitchers, endchoice):
+	table = [[1, 2222, 30, 500], [4, 55, 6777, 1]]
 	pos_ary = ['C1', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'C2', 'UT1', 'UT2', 'UT3', 'UT4', 'UT5', 'UT6']
 	htmlcode = "<h3>" + team['TeamName'] + "</h3>"
 	htmlcode += f"<table id='{team['TeamID']}'><caption>Hitters</caption>"
 	htmlcode += "<tr><th>Name</th><th>Position</th><th>Team</th><th>Bat</th><th>Fielding</th><th>Arm</th><th>G</th>"
 	htmlcode += "<th>AB</th><th>R</th><th>H</th><th>2B</th><th>3B</th><th>HR</th><th>RBI</th><th>K</th><th>BB</th><th>SB</th><th>CS</th><th>Avg</th>"
 	htmlcode += "<th>OBP</th><th>SLG</th><th>Price</th></tr>"
+	table = [["Name","Position","Team","Bat","Fielding","Arm",
+			"G","AB","R","H","2B","3B",
+			"HR","RBI","K","BB","SB","CS",
+			"Avg","OBP","SLG","Price"]]
 	for key in pos_ary:
 		for player in hitters:
 			if team[key] == player['ID']:
+				grade = alltimedraft.fieldGrade(player['DR1'])
 				player_values = [
 					key, player['Team'],
-					player['Bat'], player['Fielding'], player['Arm'], player['G'],
+					player['Bat'], grade, player['Arm'], player['G'],
 					player['AB'], player['R'], player['H'], player['2B'],player['3B'],
 					player['HR'], player['RBI'], player['K'], player['BB'], player['SB'], player['CS'], player['Avg'],
 					player['OBP'], player['SLG'], player['Price']
 					]
 				htmlcode += f"<tr><td>{player['FirstName']} {player['LastName']}</td><td>{'</td><td>'.join(map(str, player_values))}</td></tr>"
+				fullname = player['FirstName'] + " " + player['LastName']
+
+				playerrow = [key,fullname,player['Team'],player['Bat'],grade,player['Arm'],
+				player['G'],player['AB'],player['R'],player['H'],player['2B'],player['3B'],
+				player['HR'],player['RBI'],player['K'],player['BB'],player['SB'],player['CS'],
+				player['Avg'],player['OBP'],player['SLG'],player['Price']]
+
+				table.append(playerrow)
 	htmlcode += "</table>"
+	seprow = ["---","---","---","---","---","---","---","---","---","---","---","---","---","---","---","---","---","---","---","---","---","---","---",]
+	table.append(seprow)
 	pos_ary = ['SP1', 'SP2', 'SP3', 'SP4', 'SP5', 'RP1', 'RP2', 'RP3', 'RP4', 'RP5']
 	htmlcode += f"<table><caption>Pitchers</caption>"
 	htmlcode += "<tr><th>Name</th><th>Position</th><th>Team</th><th>Throw</th><th>Role</th><th>G</th><th>GS</th>"
 	htmlcode += "<th>CG</th><th>W</th><th>L</th><th>SV</th><th>IP</th><th>H</th><th>ER</th><th>HR</th><th>BB</th><th>K</th>"
 	htmlcode += "<th>ERA</th><th>WHIP</th><th>Price</th></tr>"
+	pitcherheadrow = ["Name","Position","Team","Throw","Role",
+					"G","GS","CG","W","L","SV",
+					"IP","H","ER","HR","BB","K",
+					"ERA","WHIP","Price"]
+	table.append(pitcherheadrow)
 	for key in pos_ary:
 		for player in pitchers:
 			if team[key] == player['ID']:
@@ -894,7 +900,18 @@ def teamHTML(team, hitters, pitchers):
 					player['K'], player['ERA'], player['WHIP'], player['Price']
 					]
 				htmlcode += f"<tr><td>{player['FirstName']} {player['LastName']}</td><td>{'</td><td>'.join(map(str, player_values))}</td></tr>"
+				fullname = player['FirstName'] + " " + player['LastName']
+
+				playerrow = [key,fullname,player['Team'],player['Throw'],player['Role'],
+							player['G'],player['GS'],player['CG'],player['W'],player['L'],player['SV'],
+							player['IP'],player['H'],player['ER'],player['HR'],player['BB'],player['K'],
+							player['ERA'],player['WHIP'],player['Price']]
+
+				table.append(playerrow)
 	htmlcode += "</table><p><hr><p>"
+	if endchoice == 1 or endchoice == 3:
+		print(f"{team['TeamName']} - Roster") 
+		print(tabulate(table))
 	return htmlcode
 
 

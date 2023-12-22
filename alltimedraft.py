@@ -68,6 +68,21 @@ def posConvert(pos):
 		case _:
 			return ""
 
+def fieldGrade(rating):
+	match rating:
+		case "1":
+			return "A"
+		case "2":
+			return "B"
+		case "3":
+			return "C"
+		case "4":
+			return "D"
+		case "5":
+			return "F"
+		case _:
+			return "F"
+
 
 
 if __name__ == "__main__":
@@ -126,7 +141,6 @@ if __name__ == "__main__":
 	draftSlotNum = 1
 	direction = "Up"
 	roundCounter = 1
-	enddraft = False
 	
 	#Gathers up the teams in a draft log array carrying the team['DraftSlot'] integers in proper order.
 	draftlog = alltime_lib.getDraftLog(league, numteams)
@@ -170,7 +184,7 @@ if __name__ == "__main__":
 
 
 				if choice == 3:
-					select = alltime_lib.viewTeam(league, hitters, pitchers, draftSlotNum, enddraft)
+					select = alltime_lib.viewTeam(league, hitters, pitchers, draftSlotNum)
 					if select > 0:
 						clearScreen()
 						select = alltime_lib.playerDetails(hitters, pitchers, select, True)
@@ -181,7 +195,7 @@ if __name__ == "__main__":
 				if choice == 4:
 					select = alltime_lib.viewOtherTeamList(league, numteams, draftSlotNum)
 					if select > 0:
-						choice = alltime_lib.viewTeam(league, hitters, pitchers, select, enddraft)
+						choice = alltime_lib.viewTeam(league, hitters, pitchers, select)
 						if choice > 0:
 							clearScreen()
 							player_to_draft = alltime_lib.playerDetails(hitters, pitchers, select, True)
@@ -317,13 +331,17 @@ if __name__ == "__main__":
 	for k,v in standings_dict.items():
 		htmlcode += f"<li>{k}: {v}</li>"
 	htmlcode += "</ol>"
+	print("The draft is complete!  How would you like to view the results?")
+	print("1. View Rosters and Results here")
+	print("2. View Rosters and Results in Web Browser")
+	print("3. View Both")
+	endchoice = inputCheck("Select an option", 1, 3)
+	
 	for team in league:
-		enddraft = True
-		print("Showing Rosters")
-		choice = alltime_lib.viewTeam(league, hitters, pitchers, team['DraftSlot'], enddraft)
-		input("Press any key to advance to the next team")
-		print("---------------------------")
-		htmlcode += alltime_lib.teamHTML(team, hitters, pitchers)
+		htmlcode += alltime_lib.teamHTML(team, hitters, pitchers, endchoice)
+		if endchoice == 1 or endchoice == 3:
+			input("Press any key to advance to the next team")
+			clearScreen()
 
 	htmlcode += alltime_lib.getLogFormat(league, hitters, pitchers, draftlog, selected_list, numteams)
 	htmlcode += "</body></html>"
@@ -331,5 +349,5 @@ if __name__ == "__main__":
 
 	with open('alltimedraft.html', 'w') as f:
 		f.write(htmlcode)
-
-	webbrowser.open('alltimedraft.html')
+	if endchoice == 2 or endchoice == 3:
+		webbrowser.open('alltimedraft.html')
