@@ -145,7 +145,7 @@ if __name__ == "__main__":
 	#Gathers up the teams in a draft log array carrying the team['DraftSlot'] integers in proper order.
 	draftlog = alltime_lib.getDraftLog(league, numteams)
 	
-	while (numteams * 25) > draftcounter:
+	while (numteams * 25) >= draftcounter:
 		if (draftcounter % numteams) == 1:
 			with open('log.txt', 'a') as file:
 				file.write("" + '\n')
@@ -335,19 +335,36 @@ if __name__ == "__main__":
 	print("1. View Rosters and Results here")
 	print("2. View Rosters and Results in Web Browser")
 	print("3. View Both")
-	endchoice = inputCheck("Select an option", 1, 3)
-	
-	for team in league:
-		htmlcode += alltime_lib.teamHTML(team, hitters, pitchers, endchoice)
+	print("4. End Program")
+	htmlOnce = True
+	endchoice = inputCheck("Select an option  ", 1, 4)
+	while endchoice < 4:
+		for team in league:
+			htmlcode += alltime_lib.teamHTML(team, hitters, pitchers, endchoice)
+			if endchoice == 1 or endchoice == 3:
+				input("Press any key to advance to the next team")
+				clearScreen()
+
 		if endchoice == 1 or endchoice == 3:
-			input("Press any key to advance to the next team")
-			clearScreen()
+			alltime_lib.inCodeFantasyTable(league, hitters, pitchers, numteams, standings_dict)
+			if endchoice == 3:
+				input("Press any key to open up the web browser.  Note: Will end the program")
 
-	htmlcode += alltime_lib.getLogFormat(league, hitters, pitchers, draftlog, selected_list, numteams)
-	htmlcode += "</body></html>"
+		if endchoice == 2 or endchoice == 3:
+			htmlcode += alltime_lib.getLogFormat(league, hitters, pitchers, draftlog, selected_list, numteams)
+			htmlcode += "</body></html>"
+			if htmlOnce:
+				finalcode = htmlcode
+				htmlOnce = False
+			with open('alltimedraft.html', 'w') as f:
+				f.write(finalcode)
+			webbrowser.open('alltimedraft.html')
+			endchoice = 4
 
-
-	with open('alltimedraft.html', 'w') as f:
-		f.write(htmlcode)
-	if endchoice == 2 or endchoice == 3:
-		webbrowser.open('alltimedraft.html')
+		if endchoice < 4:
+			print("Would you like to view the results again?")
+			print("1. View Rosters and Results here")
+			print("2. View Rosters and Results in Web Browser")
+			print("3. View Both")
+			print("4. End Program")
+			endchoice = inputCheck("Select an option  ", 1, 4)

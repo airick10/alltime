@@ -50,15 +50,18 @@ def setUpTeams(numteams, randomDraft, humannum):
     draftCounter = 0
     aiSequenceSlot = 1
 
-    randomNameChoice = alltimedraft.inputCheck("Press 1 to assign your own team names.  Press 2 to assign random team names. ", 1, 2)
-    if randomNameChoice == 1:
-    	randomTeamNames = True
-    else:
+    randomNameChoice = input("Press 'Y' if you want randomly assigned names.  Press any key to input your own  ")
+    if randomNameChoice == "Y" or randomNameChoice == "y":
     	randomTeamNames = False
     	teamnames = ["Wizards", "Warriors", "Barons", "Vipers", "Expos", 
     	"Packers", "Buccaneers", "Panthers", "Generals", "Storm", "Rockets", 
-    	"Sharks", "Hawks", "Bombers", "Chargers", "Mavericks"]
+    	"Sharks", "Hawks", "Bombers", "Chargers", "Mavericks", "Vikings",
+    	"Rams", "Lions", "Jesters", "Sluggers", "Warlocks", "Badgers",
+    	"Gorillas", "Bats", "Express", "Blue Sox", "Bandits", "Rogues"]
     	selected_teams = random.sample(teamnames, numteams + 1)
+    else:
+    	randomTeamNames = True
+    	
 
     for team in league:
         # TeamID
@@ -72,10 +75,10 @@ def setUpTeams(numteams, randomDraft, humannum):
         		print(f"Human Team Name: {selected_teams[counter]}")
         		input("Press any key to continue")
         	team["Human"] = True
-        	team["TeamName"] = team["TeamName"].capitalize()
+        	team["TeamName"] = team["TeamName"].title()
         	while team["TeamName"] in teamnameary:
         		team["TeamName"] = input(f"Try again, team name already exists - Human Team {team['TeamID']}: What do you want for the team name? ")
-        		team["TeamName"] = team["TeamName"].capitalize()
+        		team["TeamName"] = team["TeamName"].title()
         	teamnameary.append(team["TeamName"])
         else:
         	if randomTeamNames:
@@ -83,10 +86,10 @@ def setUpTeams(numteams, randomDraft, humannum):
         	else:
         		team["TeamName"] = selected_teams[counter]
         	team["Human"] = False
-        	team["TeamName"] = team["TeamName"].capitalize()
+        	team["TeamName"] = team["TeamName"].title()
         	while team["TeamName"] in teamnameary:
         		team["TeamName"] = input(f"Try again, team name already exists - AI Team {team['TeamID']}: What do you want for the team name? ")
-        		team["TeamName"] = team["TeamName"].capitalize()
+        		team["TeamName"] = team["TeamName"].title()
         	teamnameary.append(team["TeamName"])
         while not team["TeamName"]:
             team["TeamName"] = input(f"Try again - Team {team['TeamID']}: What do you want for the team name? ")
@@ -139,6 +142,7 @@ def setUpTeams(numteams, randomDraft, humannum):
         team["UT4"] = "Unassigned"
         team["UT5"] = "Unassigned"
         team["UT6"] = "Unassigned"
+        team["Salary"] = 200000
         counter += 1
         humannum -= 1
         draftCounter += 1  
@@ -356,7 +360,7 @@ def searchPlayer(hitters, pitchers, tryagain):
 		search = input("No matches found!  One more try.  Type the name of a player to look for ")
 	else:
 		search = input("Type the name of a player to look for ")
-	search = search.capitalize()
+	search = search.title()
 	player_list = [0]
 	counter = 1
 	for player in hitters:
@@ -842,6 +846,145 @@ def fantasyTable(league, hitters, pitchers, standings_dict, cat, btype, label, n
 	htmlcode += "</ol></td>"
 	return htmlcode, standings_dict
 
+
+def inCodeFantasyTable(league, hitters, pitchers, numteams, standings_dict):
+	DictHR = sortTeamCat(league, hitters, pitchers, "R", "H")
+	DictHR = dict(sorted(DictHR.items(), key=lambda item: item[1], reverse=True))
+	listHR = list(DictHR.items())
+	DictHHR = sortTeamCat(league, hitters, pitchers, "HR", "H")
+	DictHHR = dict(sorted(DictHHR.items(), key=lambda item: item[1], reverse=True))
+	listHHR = list(DictHHR.items())
+	DictHRBI = sortTeamCat(league, hitters, pitchers, "RBI", "H")
+	DictHRBI = dict(sorted(DictHRBI.items(), key=lambda item: item[1], reverse=True))
+	listHRBI = list(DictHRBI.items())
+	DictHSB = sortTeamCat(league, hitters, pitchers, "SB", "H")
+	DictHSB = dict(sorted(DictHSB.items(), key=lambda item: item[1], reverse=True))
+	listHSB = list(DictHSB.items())
+	DictHK = sortTeamCat(league, hitters, pitchers, "K", "H")
+	DictHK = dict(sorted(DictHK.items(), key=lambda item: item[1]))
+	listHK = list(DictHK.items())
+	DictHOPS = sortTeamCat(league, hitters, pitchers, "OPS", "H")
+	DictHOPS = dict(sorted(DictHOPS.items(), key=lambda item: item[1], reverse=True))
+	listHOPS = list(DictHRBI.items())
+	DictHD = sortTeamCat(league, hitters, pitchers, "Defense", "H")
+	DictHD = dict(sorted(DictHD.items(), key=lambda item: item[1]))
+	listHD = list(DictHRBI.items())
+	
+	table = []
+	row = ["Runs", "Home Runs", "RBI", "SB/CS", "K/BB", "OPS", "Defense"]
+	table.append(row)
+	for i in range(numteams):
+		row = []
+		# For each dictionary list, add the key-value pair if available
+		if i < len(listHR):
+			row.append(f'{i+1}: {listHR[i][0]} {listHR[i][1]}')
+		else:
+			row.append(('N/A', 'N/A'))  # Placeholder if the index doesn't exist
+
+		if i < len(listHHR):
+			row.append(f'{i+1}: {listHHR[i][0]} {listHHR[i][1]}')
+		else:
+			row.append(('N/A', 'N/A'))
+
+		if i < len(listHRBI):
+			row.append(f'{i+1}: {listHRBI[i][0]} {listHRBI[i][1]}')
+		else:
+			row.append(('N/A', 'N/A'))
+
+		if i < len(listHSB):
+			row.append(f'{i+1}: {listHSB[i][0]} {listHSB[i][1]}')
+		else:
+			row.append(('N/A', 'N/A'))
+
+		if i < len(listHK):
+			row.append(f'{i+1}: {listHK[i][0]} {listHK[i][1]}')
+		else:
+			row.append(('N/A', 'N/A'))
+
+		if i < len(listHOPS):
+			row.append(f'{i+1}: {listHOPS[i][0]} {listHOPS[i][1]}')
+		else:
+			row.append(('N/A', 'N/A'))
+
+		if i < len(listHD):
+			row.append(f'{i+1}: {listHD[i][0]} {listHD[i][1]}')
+		else:
+			row.append(('N/A', 'N/A'))
+
+		table.append(row)
+	row = ["-------", "-------", "-------", "-------", "-------", "-------", "-------"]
+	table.append(row)
+	DictPW = sortTeamCat(league, hitters, pitchers, "W", "P")
+	DictPW = dict(sorted(DictPW.items(), key=lambda item: item[1], reverse=True))
+	listPW = list(DictPW.items())
+	DictPK = sortTeamCat(league, hitters, pitchers, "K", "P")
+	DictPK = dict(sorted(DictPK.items(), key=lambda item: item[1], reverse=True))
+	listPK = list(DictPK.items())
+	DictPSHO = sortTeamCat(league, hitters, pitchers, "SHO", "P")
+	DictPSHO = dict(sorted(DictPSHO.items(), key=lambda item: item[1], reverse=True))
+	listPSHO = list(DictPSHO.items())
+	DictPSV = sortTeamCat(league, hitters, pitchers, "SV", "P")
+	DictPSV = dict(sorted(DictPSV.items(), key=lambda item: item[1], reverse=True))
+	listPSV = list(DictPSV.items())
+	DictPERA = sortTeamCat(league, hitters, pitchers, "ERA", "P")
+	DictPERA = dict(sorted(DictPERA.items(), key=lambda item: item[1]))
+	listPERA = list(DictPERA.items())
+	DictPWHIP = sortTeamCat(league, hitters, pitchers, "WHIP", "P")
+	DictPWHIP = dict(sorted(DictPWHIP.items(), key=lambda item: item[1]))
+	listPWHIP = list(DictPWHIP.items())
+	DictPrice = sortTeamCat(league, hitters, pitchers, "Price", "P")
+	DictPrice = dict(sorted(DictPrice.items(), key=lambda item: item[1], reverse=True))
+	listPrice = list(DictPrice.items())
+	row = ["W/L", "Strikeouts", "Shutouts", "Saves", "ERA", "WHIP", "Price"]
+	table.append(row)
+	for i in range(numteams):
+		row = []
+		# For each dictionary list, add the key-value pair if available
+		if i < len(listPW):
+			row.append(f'{i+1}: {listPW[i][0]} {listPW[i][1]}')
+		else:
+			row.append(('N/A', 'N/A'))  # Placeholder if the index doesn't exist
+
+		if i < len(listPK):
+			row.append(f'{i+1}: {listPK[i][0]} {listPK[i][1]}')
+		else:
+			row.append(('N/A', 'N/A'))
+
+		if i < len(listPSHO):
+			row.append(f'{i+1}: {listPSHO[i][0]} {listPSHO[i][1]}')
+		else:
+			row.append(('N/A', 'N/A'))
+
+		if i < len(listPSV):
+			row.append(f'{i+1}: {listPSV[i][0]} {listPSV[i][1]}')
+		else:
+			row.append(('N/A', 'N/A'))
+
+		if i < len(listPERA):
+			row.append(f'{i+1}: {listPERA[i][0]} {listPERA[i][1]}')
+		else:
+			row.append(('N/A', 'N/A'))
+
+		if i < len(listPWHIP):
+			row.append(f'{i+1}: {listPWHIP[i][0]} {listPWHIP[i][1]}')
+		else:
+			row.append(('N/A', 'N/A'))
+
+		if i < len(listPrice):
+			row.append(f'{i+1}: {listPrice[i][0]} {listPrice[i][1]}')
+		else:
+			row.append(('N/A', 'N/A'))
+
+		table.append(row)
+
+	print(tabulate(table))
+	input("Press any key to view the overall scores")
+	print("----------------------------------------")
+	for k,v in standings_dict.items():
+		print(f'{k}: {v}')
+	print("----------------------------------------")
+	print("")
+	print("")
 
 
 def teamHTML(team, hitters, pitchers, endchoice):
