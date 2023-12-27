@@ -445,7 +445,7 @@ def playerDetails(hitters, pitchers, playerid, viewOnly):
 		else:
 			return 0
 
-def selectPlayer(league, hitters, pitchers, player_to_draft, draftSlotNum):
+def selectPlayer(league, hitters, pitchers, player_to_draft, draftSlotNum, salaryCap):
 	position = "None"
 	player_type = alltimedraft.hitterOrPitcher(hitters, pitchers, player_to_draft)
 	for team in league:
@@ -453,6 +453,10 @@ def selectPlayer(league, hitters, pitchers, player_to_draft, draftSlotNum):
 			if player_type == "H":
 				for player in hitters:
 					if player['ID'] == player_to_draft:
+						#Salary Cap Check for Human
+						if team['Human'] and salaryCap and (player['Price'] > team['Salary']):
+							print("Player puts you over the salary cap.  Choose another player")
+							return "None"
 						# Dictionary to map positions to team roster spots
 						position_map = {
 							0: ['UT1', 'UT2', 'UT3', 'UT4', 'UT5', 'UT6'],
@@ -479,14 +483,17 @@ def selectPlayer(league, hitters, pitchers, player_to_draft, draftSlotNum):
 									return position
 							if team['Human']:
 								print("")
-								print("No position is available to put this player on.  Please select another.")
+								print("Position in starting lineup is booked.  Moving to Utility slot.")
 							else:
 								with open('log.txt', 'a') as file:
 									file.write("**AI LOG** - Position Check Failed.  Choosing another" + '\n')
-								#print("**AI LOG** - Position Check Failed.  Choosing another")
 			else:
 				for player in pitchers:
 					if player['ID'] == player_to_draft:
+						#Salary Cap Check for Human
+						if team['Human'] and salaryCap and (player['Price'] > team['Salary']):
+							print("Player puts you over the salary cap.  Choose another player")
+							return "None"
 						# Dictionary to map roles to team roster spots
 						role_map = {
 							'S': ['SP1', 'SP2', 'SP3', 'SP4', 'SP5'],
@@ -506,7 +513,6 @@ def selectPlayer(league, hitters, pitchers, player_to_draft, draftSlotNum):
 						else:
 							with open('log.txt', 'a') as file:
 								file.write("**AI LOG** - Position Check Failed.  Choosing another" + '\n')
-							#print("**AI LOG** - Position Check Failed.  Choosing another")
 
 	return position
 
@@ -518,6 +524,7 @@ def assignToRoster(league, hitters, pitchers, player_to_draft, draftSlotNum, pos
 				for player in hitters:
 					if player['ID'] == player_to_draft:
 						team[position] = player_to_draft
+						team['Salary'] -= player['Price']
 						pos = alltimedraft.posConvert(player['DP1'])
 						with open('log.txt', 'a') as file:
 							file.write(f"{team['TeamName']} have drafted {pos} - {player['FirstName']} {player['LastName']} " + '\n')
@@ -526,6 +533,7 @@ def assignToRoster(league, hitters, pitchers, player_to_draft, draftSlotNum, pos
 				for player in pitchers:
 					if player['ID'] == player_to_draft:
 						team[position] = player_to_draft
+						team['Salary'] -= player['Price']
 						pos = alltimedraft.posConvert(player['Role'])
 						with open('log.txt', 'a') as file:
 							file.write(f"{team['TeamName']} have drafted {pos} - {player['FirstName']} {player['LastName']} " + '\n')
@@ -669,21 +677,27 @@ def sortList(playerpool, sortvalue, type):
 		return playerpool
 
 
-def getDraftPoolList(player, choicearray, counter, playertype):
+def getDraftPoolList(player, choicearray, counter, playertype, salaryCap):
 	if playertype == "H":
 		position = alltimedraft.posConvert(player['DP1'])
-		print(f"{counter}. {player['FirstName']} {player['LastName']} ({player['Team']}): {player['Bat']}/{position} - {player['Avg']}/{player['OBP']}/{player['SLG']}")
+		if salaryCap:
+			print(f"{counter}. {player['FirstName']} {player['LastName']} ({player['Team']}): {player['Bat']}/{position} - {player['Avg']}/{player['OBP']}/{player['SLG']} - ${player['Price']:,}")
+		else:
+			print(f"{counter}. {player['FirstName']} {player['LastName']} ({player['Team']}): {player['Bat']}/{position} - {player['Avg']}/{player['OBP']}/{player['SLG']}")
 		playerid = int(player['ID'])
 		choicearray.append(playerid)
 	else:
 		position = alltimedraft.posConvert(player['Role'])
-		print(f"{counter}. {player['FirstName']} {player['LastName']} ({player['Team']}): {player['Throw']}/{position}   {player['W']}-{player['L']} - {player['ERA']} ERA / {player['WHIP']} WHIP")
+		if salaryCap:
+			print(f"{counter}. {player['FirstName']} {player['LastName']} ({player['Team']}): {player['Throw']}/{position}   {player['W']}-{player['L']} - {player['ERA']} ERA / {player['WHIP']} WHIP - ${player['Price']:,}")
+		else:
+			print(f"{counter}. {player['FirstName']} {player['LastName']} ({player['Team']}): {player['Throw']}/{position}   {player['W']}-{player['L']} - {player['ERA']} ERA / {player['WHIP']} WHIP")
 		playerid = int(player['ID'])
 		choicearray.append(playerid)
 	return choicearray
 
 
-def getDraftPool(hitters, pitchers, type, sortvalue, selected_list):
+def getDraftPool(hitters, pitchers, type, sortvalue, selected_list, salaryCap):
 	#X is the number of players displayed at once.
 	X = 30
 	choicearray = [0]
@@ -724,15 +738,15 @@ def getDraftPool(hitters, pitchers, type, sortvalue, selected_list):
 				if sortvalue == "Position" and position[1]:
 					position[0] = str(position[0])
 					if hitters[counter]['DP1'] == position[0]:
-						choicearray = getDraftPoolList(hitters[counter], choicearray, listcounter, "H")
+						choicearray = getDraftPoolList(hitters[counter], choicearray, listcounter, "H", salaryCap)
 						listcounter += 1
 				elif sortvalue == "Position" and not position[1]:
 					if hitters[counter]['DP1'] == position[0] or hitters[counter]['DP2'] == position[0] or hitters[counter]['DP3'] == position[0] or hitters[counter]['DP4'] == position[0] or hitters[counter]['DP5'] == position[0] or hitters[counter]['DP6'] == position[0] or hitters[counter]['DP7'] == position[0] or hitters[counter]['DP8'] == position[0]:
-						choicearray = getDraftPoolList(hitters[counter], choicearray, listcounter, "H")
+						choicearray = getDraftPoolList(hitters[counter], choicearray, listcounter, "H", salaryCap)
 						listcounter += 1		
 				#IF POSITION CHECK ISN'T SELECTED
 				else:
-					choicearray = getDraftPoolList(hitters[counter], choicearray, listcounter, "H")
+					choicearray = getDraftPoolList(hitters[counter], choicearray, listcounter, "H", salaryCap)
 					listcounter += 1
 			counter += 1
 	else:
@@ -742,10 +756,10 @@ def getDraftPool(hitters, pitchers, type, sortvalue, selected_list):
 			if pitchers[counter]['ID'] not in selected_list:
 				if sortvalue == "Position":
 					if pitchers[counter]['Role'] == position[0]:
-						chiocearray = getDraftPoolList(pitchers[counter], choicearray, listcounter, "P")
+						chiocearray = getDraftPoolList(pitchers[counter], choicearray, listcounter, "P", salaryCap)
 						listcounter += 1
 				else:
-					chiocearray = getDraftPoolList(pitchers[counter], choicearray, listcounter, "P")
+					chiocearray = getDraftPoolList(pitchers[counter], choicearray, listcounter, "P", salaryCap)
 					listcounter += 1
 			counter += 1
 	
@@ -987,10 +1001,13 @@ def inCodeFantasyTable(league, hitters, pitchers, numteams, standings_dict):
 	print("")
 
 
-def teamHTML(team, hitters, pitchers, endchoice):
+def teamHTML(team, hitters, pitchers, endchoice, salaryCap):
 	table = [[1, 2222, 30, 500], [4, 55, 6777, 1]]
 	pos_ary = ['C1', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'C2', 'UT1', 'UT2', 'UT3', 'UT4', 'UT5', 'UT6']
-	htmlcode = "<h3>" + team['TeamName'] + "</h3>"
+	if salaryCap:
+		htmlcode = "<h3>" + team['TeamName'] + " - " + str(team['Salary']) + " left" + "</h3>"
+	else:
+		htmlcode = "<h3>" + team['TeamName'] + "</h3>"
 	htmlcode += f"<table id='{team['TeamID']}'><caption>Hitters</caption>"
 	htmlcode += "<tr><th>Name</th><th>Position</th><th>Team</th><th>Bat</th><th>Fielding</th><th>Arm</th><th>G</th>"
 	htmlcode += "<th>AB</th><th>R</th><th>H</th><th>2B</th><th>3B</th><th>HR</th><th>RBI</th><th>K</th><th>BB</th><th>SB</th><th>CS</th><th>Avg</th>"
@@ -1053,7 +1070,10 @@ def teamHTML(team, hitters, pitchers, endchoice):
 				table.append(playerrow)
 	htmlcode += "</table><p><hr><p>"
 	if endchoice == 1 or endchoice == 3:
-		print(f"{team['TeamName']} - Roster") 
+		if salaryCap:
+			print(f"{team['TeamName']} - Roster - {team['Salary']} left")
+		else:
+			print(f"{team['TeamName']} - Roster")
 		print(tabulate(table))
 	return htmlcode
 

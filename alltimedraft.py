@@ -134,7 +134,11 @@ if __name__ == "__main__":
 	
 	#Creates the league array for all the teams and draft slots.
 	league = alltime_lib.setUpTeams(numteams, randomDraft, humannum)		
-	
+	salCapCheck = input("Press 'Y' if you want a $200 salary cap.  Press any key for a straight draft")
+	if salCapCheck == "Y" or salCapCheck == "y":
+		salaryCap = True
+	else:
+		salaryCap = False
 	
 	#Starts the Draft Counter
 	draftcounter = 1
@@ -166,7 +170,7 @@ if __name__ == "__main__":
 				choice = alltime_lib.draftMenu()
 				clearScreen()
 				if choice == 1:
-					select = alltime_lib.getDraftPool(hitters, pitchers, "H", "None", selected_list)
+					select = alltime_lib.getDraftPool(hitters, pitchers, "H", "None", selected_list, salaryCap)
 					if select > 0:
 						clearScreen()
 						player_to_draft = alltime_lib.playerDetails(hitters, pitchers, select, False)
@@ -175,7 +179,7 @@ if __name__ == "__main__":
 					
 					
 				if choice == 2:
-					select = alltime_lib.getDraftPool(hitters, pitchers, "P", "None", selected_list)
+					select = alltime_lib.getDraftPool(hitters, pitchers, "P", "None", selected_list, salaryCap)
 					if select > 0:
 						clearScreen()
 						player_to_draft = alltime_lib.playerDetails(hitters, pitchers, select, False)
@@ -219,7 +223,7 @@ if __name__ == "__main__":
 						choice = 0
 
 				if choice == 7:
-					select = alltime_lib.getDraftPool(hitters, pitchers, "H", "Position", selected_list)
+					select = alltime_lib.getDraftPool(hitters, pitchers, "H", "Position", selected_list, salaryCap)
 					if select > 0:
 						clearScreen()
 						player_to_draft = alltime_lib.playerDetails(hitters, pitchers, select, False)
@@ -231,9 +235,9 @@ if __name__ == "__main__":
 					sortvalue = alltime_lib.sortListMenu()
 					
 					if sortvalue == "H" or sortvalue == "R" or sortvalue == "HHR" or sortvalue == "RBI" or sortvalue == "HBB" or sortvalue == "HK" or sortvalue == "SB" or sortvalue == "Avg" or sortvalue == "OBP" or sortvalue == "SLG":
-						select = alltime_lib.getDraftPool(hitters, pitchers, "H", sortvalue, selected_list)
+						select = alltime_lib.getDraftPool(hitters, pitchers, "H", sortvalue, selected_list, salaryCap)
 					else:
-						select = alltime_lib.getDraftPool(hitters, pitchers, "P", sortvalue, selected_list)
+						select = alltime_lib.getDraftPool(hitters, pitchers, "P", sortvalue, selected_list, salaryCap)
 						
 					if select > 0:
 						clearScreen()
@@ -247,7 +251,7 @@ if __name__ == "__main__":
 				if player_to_draft == 0:
 					choice = 0
 				else:
-					selected_position = alltime_lib.selectPlayer(league, hitters, pitchers, player_to_draft, draftSlotNum)
+					selected_position = alltime_lib.selectPlayer(league, hitters, pitchers, player_to_draft, draftSlotNum, salaryCap)
 					if selected_position != "None":
 						league = alltime_lib.assignToRoster(league, hitters, pitchers, player_to_draft, draftSlotNum, selected_position)
 						selected_list.append(player_to_draft)
@@ -261,8 +265,8 @@ if __name__ == "__main__":
 		else:
 			aiPickSuccess = False
 			while not aiPickSuccess:
-				player_to_draft = aipicks.aiSelect(league, hitters, pitchers, selected_list, draftSlotNum, roundCounter)
-				selected_position = alltime_lib.selectPlayer(league, hitters, pitchers, player_to_draft, draftSlotNum)
+				player_to_draft = aipicks.aiSelect(league, hitters, pitchers, selected_list, draftSlotNum, roundCounter, salaryCap)
+				selected_position = alltime_lib.selectPlayer(league, hitters, pitchers, player_to_draft, draftSlotNum, salaryCap)
 				if selected_position != "None":
 					league = alltime_lib.assignToRoster(league, hitters, pitchers, player_to_draft, draftSlotNum, selected_position)
 					selected_list.append(player_to_draft)
@@ -340,7 +344,7 @@ if __name__ == "__main__":
 	endchoice = inputCheck("Select an option  ", 1, 4)
 	while endchoice < 4:
 		for team in league:
-			htmlcode += alltime_lib.teamHTML(team, hitters, pitchers, endchoice)
+			htmlcode += alltime_lib.teamHTML(team, hitters, pitchers, endchoice, salaryCap)
 			if endchoice == 1 or endchoice == 3:
 				input("Press any key to advance to the next team")
 				clearScreen()

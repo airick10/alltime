@@ -10,7 +10,7 @@ import random
 # 14 - Up the middle. Look for Catchers, 2nd base, Short, and CF
 # 12 - Position Player position check (Looking for 1s on defense)
 
-def aiSelectSnippet(log, playerpool, selected_list, threshold, defCheck, direction):
+def aiSelectSnippet(log, playerpool, selected_list, threshold, defCheck, direction, avgSalary):
 	defchecklog = f"DefCheck - {defCheck}"
 	with open('log.txt', 'a') as file:
 		file.write(log + '\n')
@@ -47,44 +47,44 @@ def aiSelectSnippet(log, playerpool, selected_list, threshold, defCheck, directi
 	for player in playerpool:
 		#print(player['LastName'])
 		if player['ID'] not in selected_list and check_functions[defCheck](player):
-			if threshold < 0 or counter > threshold:
-				return player['ID']
-			counter += 1
+			if player['Price'] > avgSalary:
+				with open('log.txt', 'a') as file:
+					file.write("**AI LOG** - Salary Fail" + '\n')
+			else:
+				if threshold < 0 or counter > threshold:
+					return player['ID']
+				counter += 1
 
 	return None
 
 
-def firstRounds(roll, hitters, pitchers, selected_list, position):
+def firstRounds(roll, hitters, pitchers, selected_list, position, avgSalary):
+	avgSalary = 20000
 	with open('log.txt', 'a') as file:
 		file.write("**AI LOG** - Best Price" + '\n')
-	#print("**AI LOG** - Best Price")
 	#Putting the hitter pool in its own playerpool for the AI
 	hproll = randrange(100)
 	position_array = [0,1,0]
 	if hproll < roll:
 		with open('log.txt', 'a') as file:
 			file.write("**AI LOG** - Hitter Selected" + '\n')
-		#print("**AI LOG** - Hitter Selected")
 		playerpool = hitters
 		with open('log.txt', 'a') as file:
 			file.write("**AI LOG** - Best Price" + '\n')
-		#print("**AI LOG** - Best Price")
-		playerpool = alltime_lib.sortList(playerpool, "Price", "H")
-		player_to_select = topFourGrabs("H", playerpool, selected_list, position_array, 0)
+		#playerpool = alltime_lib.sortList(playerpool, "Price", "H")
+		player_to_select = topFourGrabs("H", playerpool, selected_list, position_array, 0, avgSalary)
 	else:
 		with open('log.txt', 'a') as file:
 			file.write("**AI LOG** - Pitcher Selected" + '\n')
-		#print("**AI LOG** - Pitcher Selected")
 		playerpool = pitchers
 		with open('log.txt', 'a') as file:
 			file.write("**AI LOG** - Best Price" + '\n')
-		#print("**AI LOG** - Best Price")
-		playerpool = alltime_lib.sortList(playerpool, "Price", "P")
-		player_to_select = topFourGrabs("P", playerpool, selected_list, position_array, 0)
+		#playerpool = alltime_lib.sortList(playerpool, "Price", "P")
+		player_to_select = topFourGrabs("P", playerpool, selected_list, position_array, 0, avgSalary)
 	return player_to_select
 
 
-def topFourGrabs(type, playerpool, selected_list, position, direction):
+def topFourGrabs(type, playerpool, selected_list, position, direction, avgSalary):
 	if type == "P":
 		if direction == 1 and position[1] == 1:
 			defCheck = 1
@@ -99,35 +99,35 @@ def topFourGrabs(type, playerpool, selected_list, position, direction):
 	#If the roll is 0 - 39 (40%), don't apply a counter.  Just take the highest price.
 	if newRoll < 40:
 		if type == "H":
-			player_to_select = aiSelectSnippet("**AI LOG** - 1st Hitter", playerpool, selected_list, -1, defCheck, direction)
+			player_to_select = aiSelectSnippet("**AI LOG** - 1st Hitter", playerpool, selected_list, -1, defCheck, direction, avgSalary)
 		else:
-			player_to_select = aiSelectSnippet("**AI LOG** - 1st Pitcher", playerpool, selected_list, -1, defCheck, direction)
+			player_to_select = aiSelectSnippet("**AI LOG** - 1st Pitcher", playerpool, selected_list, -1, defCheck, direction, avgSalary)
 	#If the roll is 40 - 69 (30%), apply a counter at 0.  The counter needs to be at 1 to take a player.
 	#So the script will take the second best.
 	elif newRoll < 70 and newRoll >= 40:
 		if type == "H":
-			player_to_select = aiSelectSnippet("**AI LOG** - 2nd Hitter", playerpool, selected_list, 0, defCheck, direction)
+			player_to_select = aiSelectSnippet("**AI LOG** - 2nd Hitter", playerpool, selected_list, 0, defCheck, direction, avgSalary)
 		else:
-			player_to_select = aiSelectSnippet("**AI LOG** - 2nd Pitcher", playerpool, selected_list, 0, defCheck, direction)
+			player_to_select = aiSelectSnippet("**AI LOG** - 2nd Pitcher", playerpool, selected_list, 0, defCheck, direction, avgSalary)
 	#If the roll is 70 - 89 (20%), apply a counter at 0.  The counter needs to be at 2 to take a player.
 	#So the script will take the third best.				
 	elif newRoll < 90 and newRoll >= 70:
 		if type == "H":
-			player_to_select = aiSelectSnippet("**AI LOG** - 3rd Hitter", playerpool, selected_list, 1, defCheck, direction)
+			player_to_select = aiSelectSnippet("**AI LOG** - 3rd Hitter", playerpool, selected_list, 1, defCheck, direction, avgSalary)
 		else:
-			player_to_select = aiSelectSnippet("**AI LOG** - 3rd Pitcher", playerpool, selected_list, 1, defCheck, direction)
+			player_to_select = aiSelectSnippet("**AI LOG** - 3rd Pitcher", playerpool, selected_list, 1, defCheck, direction, avgSalary)
 	#If the roll is 90 - 99 (10%), apply a counter at 0.  The counter needs to be at 3 to take a player.
 	#So the script will take the second best.
 	else:
 		if type == "H":
-			player_to_select = aiSelectSnippet("**AI LOG** - 4th Hitter", playerpool, selected_list, 2, defCheck, direction)
+			player_to_select = aiSelectSnippet("**AI LOG** - 4th Hitter", playerpool, selected_list, 2, defCheck, direction, avgSalary)
 		else:
-			player_to_select = aiSelectSnippet("**AI LOG** - 4th Pitcher", playerpool, selected_list, 2, defCheck, direction)
+			player_to_select = aiSelectSnippet("**AI LOG** - 4th Pitcher", playerpool, selected_list, 2, defCheck, direction, avgSalary)
 
 	return player_to_select
 
 
-def autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys):
+def autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys, avgSalary):
 	sideThreshold = 50
 	side = random.randrange(100)
 
@@ -135,51 +135,46 @@ def autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, f
 		sideThreshold = 90
 
 	if side < sideThreshold and roundCounter < 3:
-		player_to_select = firstRounds(30, hitters, pitchers, selected_list, position)
+		player_to_select = firstRounds(30, hitters, pitchers, selected_list, position, avgSalary)
 	elif side < sideThreshold:
 		key_index = weighted_random_choice([0, 1, 2], [70, 20, 10])  # Weighted random choice for key_index
 		key_str = keys[key_index]  # Select the key using the randomly chosen index
 		logstr = f"**AI LOG** - Hitter Selected ({key_str})"
 		with open('log.txt', 'a') as file:
 			file.write(logstr + '\n')
-		#print(f"**AI LOG** - Hitter Selected ({key_str})")
 		playerpool = hitters
 		rolerandom = random.randrange(100)
 		logstr = f"**AI LOG** - Category: {key_str}"
 		with open('log.txt', 'a') as file:
 			file.write(logstr + '\n')
-		#print(f"**AI LOG** - Category: {key_str}")
 		playerpool = alltime_lib.sortList(playerpool, key_str, "H")
 		if focus < 15 and focus > 11:
 			if randrange(100) < 65:
-				player_to_select = topFourGrabs("H", playerpool, selected_list, position, focus)
+				player_to_select = topFourGrabs("H", playerpool, selected_list, position, focus, avgSalary)
 			else:
-				player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0)
+				player_to_select = topFourGrabs("H", playerpool, selected_list, position, 0, avgSalary)
 		else:
-			player_to_select = topFourGrabs("H", playerpool, selected_list, position, focus)
+			player_to_select = topFourGrabs("H", playerpool, selected_list, position, focus, avgSalary)
 	else:
 		key_index = weighted_random_choice([3, 4, 5], [70, 20, 10])  # Weighted random choice for key_index
 		key_str = keys[key_index]  # Select the key using the randomly chosen index
 		logstr = f"**AI LOG** - Pitcher Selected ({key_str})"
 		with open('log.txt', 'a') as file:
 			file.write(logstr + '\n')
-		#print(f"**AI LOG** - Pitcher Selected ({key_str})")
 		playerpool = pitchers
 		rolerandom = random.randrange(100)
 		if rolerandom < 80 and position[1] > 0:
 			with open('log.txt', 'a') as file:
 				file.write("**AI LOG** - Select Starting Pitcher" + '\n')
-			#print("**AI LOG** - Select Starting Pitcher")
-			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
+			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1, avgSalary)
 		else:
 			with open('log.txt', 'a') as file:
 				file.write("**AI LOG** - Select Relief Pitcher" + '\n')
-			#print("**AI LOG** - Select Relief Pitcher")
-			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11)
+			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11, avgSalary)
 	return player_to_select
 
 
-def autoSelectPitcher(position, hitters, pitchers, selected_list, roundCounter, focus, keys):
+def autoSelectPitcher(position, hitters, pitchers, selected_list, roundCounter, focus, keys, avgSalary):
 	sideThreshold = 50
 	side = random.randrange(100)
 
@@ -187,47 +182,42 @@ def autoSelectPitcher(position, hitters, pitchers, selected_list, roundCounter, 
 		sideThreshold = 90
 
 	if side < sideThreshold and roundCounter < 3:
-		player_to_select = firstRounds(30, hitters, pitchers, selected_list, position)
+		player_to_select = firstRounds(30, hitters, pitchers, selected_list, position, avgSalary)
 	elif side < sideThreshold:
 		key_index = weighted_random_choice([0, 1, 2], [70, 20, 10])  # Weighted random choice for key_index
 		key_str = keys[key_index]  # Select the key using the randomly chosen index
 		logstr = f"**AI LOG** - Pitcher Selected ({key_str})"
 		with open('log.txt', 'a') as file:
 			file.write(logstr + '\n')
-		#print(f"**AI LOG** - Pitcher Selected ({key_str})")
 		playerpool = pitchers
 		rolerandom = random.randrange(100)
 		logstr = f"**AI LOG** - Category: {key_str}"
 		with open('log.txt', 'a') as file:
 			file.write(logstr + '\n')
-		#print(f"**AI LOG** - Category: {key_str}")
 		playerpool = alltime_lib.sortList(playerpool, key_str, "P")
 
 		if rolerandom < 80 and position[1] > 0:
 			with open('log.txt', 'a') as file:
 				file.write("**AI LOG** - Select Starting Pitcher" + '\n')
-			#print("**AI LOG** - Select Starting Pitcher")
 			if focus == 13:
 				if randrange(100) < 65:
-					player_to_select = topFourGrabs("P", playerpool, selected_list, position, focus)
+					player_to_select = topFourGrabs("P", playerpool, selected_list, position, focus, avgSalary)
 				else:
-					player_to_select = topFourGrabs("P", playerpool, selected_list, position, 0)
+					player_to_select = topFourGrabs("P", playerpool, selected_list, position, 0, avgSalary)
 			else:
-				player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1)
+				player_to_select = topFourGrabs("P", playerpool, selected_list, position, 1, avgSalary)
 		else:
 			with open('log.txt', 'a') as file:
 				file.write("**AI LOG** - Select Relief Pitcher" + '\n')
-			#print("**AI LOG** - Select Relief Pitcher")
-			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11)
+			player_to_select = topFourGrabs("P", playerpool, selected_list, position, 11, avgSalary)
 	else:
 		key_index = weighted_random_choice([3, 4, 5], [70, 20, 10])  # Weighted random choice for key_index
 		key_str = keys[key_index]  # Select the key using the randomly chosen index
 		logstr = f"**AI LOG** - Hitter Selected ({key_str})"
 		with open('log.txt', 'a') as file:
 			file.write(logstr + '\n')
-		#print(f"**AI LOG** - Hitter Selected ({key_str})")
 		playerpool = hitters
-		player_to_select = topFourGrabs("H", playerpool, selected_list, position, focus)
+		player_to_select = topFourGrabs("H", playerpool, selected_list, position, focus, avgSalary)
 
 	return player_to_select
 
@@ -278,11 +268,6 @@ def eligiblePosition(team):
 		while selected_value == 1 or selected_value == 11:
 			selected_value = random.choice(position_lottery)
 	selected_array[0] = selected_value
-	'''
-	while selected_value == 1 or selected_value == 11:
-		selected_value = random.choice(position_lottery)
-	selected_array[0] = selected_value
-	'''
 		
 	
 	if team['AIFocus'] == 15:
@@ -299,108 +284,98 @@ def eligiblePosition(team):
 	
 
 
-def aiSelect(league, hitters, pitchers, selected_list, draftSlotNum, roundCounter):
+def aiSelect(league, hitters, pitchers, selected_list, draftSlotNum, roundCounter, salaryCap):
 	for team in league:
 		if draftSlotNum == team['DraftSlot']:
 			position = eligiblePosition(team)
-			#print(f"Position - {position}")
+			if salaryCap:
+				if (26 - roundCounter) > 0:
+					avgSalary = team['Salary'] / (26 - roundCounter)
+				else:
+					avgSalary = team['Salary']
+			else:
+				avgSalary = 500000
 			match team['AIFocus']:
 				case 1:
 					#Best Overall
 					keys = ["Price", "Price", "Price", "Price", "Price", "Price"]
 					focus = 0
-					player_selected = autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys)
-					#player_selected = aiOne(position, hitters, pitchers, selected_list)
+					player_selected = autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys, avgSalary)
 				case 2:
 					#Power Hitting
 					keys = ["HR", "SLG", "RBI", "Price", "K", "ERA"]
 					focus = 0
-					player_selected = autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys)
-					#player_selected = aiTwo(position, hitters, pitchers, selected_list, roundCounter)
+					player_selected = autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys, avgSalary)
 				case 3:
 					#Starting Pitching
 					keys = ["Price", "W", "ERA", "Price", "OBP", "HR"]
 					focus = 0
-					player_selected = autoSelectPitcher(position, hitters, pitchers, selected_list, roundCounter, focus, keys)
-					#player_selected = aiThree(position, hitters, pitchers, selected_list, roundCounter)
+					player_selected = autoSelectPitcher(position, hitters, pitchers, selected_list, roundCounter, focus, keys, avgSalary)
 				case 4:
 					#Batting Avg/Speed
 					keys = ["Avg", "SB", "Price", "Price", "WHIP", "ERA"]
 					focus = 0
-					player_selected = autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys)
-					#player_selected = aiFour(position, hitters, pitchers, selected_list, roundCounter)
+					player_selected = autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys, avgSalary)
 				case 5:
 					#Defense/Hits
 					keys = ["Price", "H", "Avg", "Price", "W", "K"]
 					focus = 12
-					player_selected = autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys)
-					#player_selected = aiFive(position, hitters, pitchers, selected_list, roundCounter)
+					player_selected = autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys, avgSalary)
 				case 6:
 					#Defense/Speed
 					keys = ["Price", "SB", "Avg", "Price", "W", "K"]
 					focus = 12
-					player_selected = autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys)
-					#player_selected = aiSix(position, hitters, pitchers, selected_list, roundCounter)
+					player_selected = autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys, avgSalary)
 				case 7:
 					#Strong Bullpen
 					keys = ["Price", "SV", "ERA", "Price", "HR", "RBI"]
 					focus = 11
-					player_selected = autoSelectPitcher(position, hitters, pitchers, selected_list, roundCounter, focus, keys)
-					#player_selected = aiSeven(position, hitters, pitchers, selected_list, roundCounter)
+					player_selected = autoSelectPitcher(position, hitters, pitchers, selected_list, roundCounter, focus, keys, avgSalary)
 				case 8:
 					#WHIP kings
 					keys = ["WHIP", "ERA", "Price", "Price", "Avg", "RBI"]
 					focus = 0
-					player_selected = autoSelectPitcher(position, hitters, pitchers, selected_list, roundCounter, focus, keys)
-					#player_selected = aiEight(position, hitters, pitchers, selected_list, roundCounter)
+					player_selected = autoSelectPitcher(position, hitters, pitchers, selected_list, roundCounter, focus, keys, avgSalary)
 				case 9:
 					#Speed
 					keys = ["SB", "OBP", "Price", "Price", "WHIP", "W"]
 					focus = 0
-					player_selected = autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys)
-					#player_selected = aiNine(position, hitters, pitchers, selected_list, roundCounter)
+					player_selected = autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys, avgSalary)
 				case 10:
 					#Gappers - Doubles/Triples
 					keys = ["2B", "SLG", "3B", "Price", "K", "WHIP"]
 					focus = 0
-					player_selected = autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys)
-					#player_selected = aiTen(position, hitters, pitchers, selected_list, roundCounter)
+					player_selected = autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys, avgSalary)
 				case 11:
 					#On Base Team
 					keys = ["OBP", "Avg", "Price", "Price", "WHIP", "ERA"]
 					focus = 0
-					player_selected = autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys)
-					#player_selected = aiEleven(position, hitters, pitchers, selected_list, roundCounter)
+					player_selected = autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys, avgSalary)
 				case 12:
 					#Power Pitchers
 					keys = ["K", "WHIP", "Price", "Price", "HR", "SLG"]
 					focus = 0
-					player_selected = autoSelectPitcher(position, hitters, pitchers, selected_list, roundCounter, focus, keys)
-					#player_selected = aiTwelve(position, hitters, pitchers, selected_list, roundCounter)
+					player_selected = autoSelectPitcher(position, hitters, pitchers, selected_list, roundCounter, focus, keys, avgSalary)
 				case 13:
 					#Lefty Dome
 					keys = ["Price", "Avg", "SLG", "Price", "ERA", "WHIP"]
 					focus = 13
-					player_selected = autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys)
-					#player_selected = aiThirteen(position, hitters, pitchers, selected_list)
+					player_selected = autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys, avgSalary)
 				case 14:
 					#Balance. Hitters and Pitchers back and forth
 					keys = ["Price", "Avg", "HR", "Price", "ERA", "W"]
 					focus = 0
-					player_selected = autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys)
-					#player_selected = aiFourteen(position, hitters, pitchers, selected_list, roundCounter)
+					player_selected = autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys, avgSalary)
 				case 15:
 					#Strong Up the Middle
 					keys = ["Price", "Avg", "HR", "Price", "ERA", "W"]
 					focus = 14
-					player_selected = autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys)
-					#player_selected = aiFifteen(position, hitters, pitchers, selected_list, roundCounter)
+					player_selected = autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys, avgSalary)
 				case 16:
 					#Clutch Hitters
 					keys = ["RBI", "SLG", "Price", "Price", "WHIP", "K"]
 					focus = 0
-					player_selected = autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys)
-					#player_selected = aiSixteen(position, hitters, pitchers, selected_list, roundCounter)
+					player_selected = autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, focus, keys, avgSalary)
 
 	return player_selected
 
