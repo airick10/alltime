@@ -109,10 +109,11 @@ if __name__ == "__main__":
 	
 	#Asks how many teams will be drafting.
 	clearScreen()
-	numteams = inputCheck("How many teams?  ", 1, 30)
+	numteams = inputCheck("How many teams? (Max: 30)  ", 1, 30)
 	print (f"Great! {numteams} teams will draft!")
 	
 	#Now asks for how many players are human
+	print("")
 	humannum = inputCheck("How many human players?  ", 0, numteams)
 	
 	
@@ -134,7 +135,7 @@ if __name__ == "__main__":
 	
 	#Creates the league array for all the teams and draft slots.
 	league = alltime_lib.setUpTeams(numteams, randomDraft, humannum)		
-	salCapCheck = input("Press 'Y' if you want a $200 salary cap.  Press any key for a straight draft")
+	salCapCheck = input("Press 'Y' if you want a $200 salary cap.  Press Enter for a straight draft  ")
 	if salCapCheck == "Y" or salCapCheck == "y":
 		salaryCap = True
 	else:
@@ -188,7 +189,7 @@ if __name__ == "__main__":
 
 
 				if choice == 3:
-					select = alltime_lib.viewTeam(league, hitters, pitchers, draftSlotNum)
+					select = alltime_lib.viewTeam(league, hitters, pitchers, draftSlotNum, salaryCap)
 					if select > 0:
 						clearScreen()
 						select = alltime_lib.playerDetails(hitters, pitchers, select, True)
@@ -199,7 +200,7 @@ if __name__ == "__main__":
 				if choice == 4:
 					select = alltime_lib.viewOtherTeamList(league, numteams, draftSlotNum)
 					if select > 0:
-						choice = alltime_lib.viewTeam(league, hitters, pitchers, select)
+						choice = alltime_lib.viewTeam(league, hitters, pitchers, select, salaryCap)
 						if choice > 0:
 							clearScreen()
 							player_to_draft = alltime_lib.playerDetails(hitters, pitchers, select, True)
@@ -213,9 +214,9 @@ if __name__ == "__main__":
 			
 
 				if choice == 6:
-					select = alltime_lib.searchPlayer(hitters, pitchers, False)
+					select = alltime_lib.searchPlayer(hitters, pitchers, selected_list, False)
 					if select == 1:
-						select = alltime_lib.searchPlayer(hitters, pitchers, True)
+						select = alltime_lib.searchPlayer(hitters, pitchers, selected_list, True)
 					if select > 0:
 						clearScreen()
 						player_to_draft = alltime_lib.playerDetails(hitters, pitchers, select, False)
@@ -234,7 +235,9 @@ if __name__ == "__main__":
 				if choice == 8:
 					sortvalue = alltime_lib.sortListMenu()
 					
-					if sortvalue == "H" or sortvalue == "R" or sortvalue == "HHR" or sortvalue == "RBI" or sortvalue == "HBB" or sortvalue == "HK" or sortvalue == "SB" or sortvalue == "Avg" or sortvalue == "OBP" or sortvalue == "SLG":
+					if sortvalue == "None":
+						select = alltime_lib.getDraftPool(hitters, pitchers, "H", "None", selected_list, salaryCap)
+					elif sortvalue == "H" or sortvalue == "R" or sortvalue == "HHR" or sortvalue == "RBI" or sortvalue == "HBB" or sortvalue == "HK" or sortvalue == "SB" or sortvalue == "Avg" or sortvalue == "OBP" or sortvalue == "SLG":
 						select = alltime_lib.getDraftPool(hitters, pitchers, "H", sortvalue, selected_list, salaryCap)
 					else:
 						select = alltime_lib.getDraftPool(hitters, pitchers, "P", sortvalue, selected_list, salaryCap)
@@ -293,11 +296,7 @@ if __name__ == "__main__":
 			draftSlotNum = newDraftSlotNum
 		draftcounter += 1
 
-
-	#priceDictH = alltime_lib.sortTeamCat(league, hitters, pitchers, "Price", "H")
-	#priceDictP = alltime_lib.sortTeamCat(league, hitters, pitchers, "Price", "P")
-	#priceDictH = dict(sorted(priceDictH.items(), key=lambda item: item[1], reverse=True))
-	#priceDictP = dict(sorted(priceDictP.items(), key=lambda item: item[1], reverse=True))
+# AFTER THE DRAFT
 	standings_dict = {}  # Create an empty dictionary
 
 	for team in league:
@@ -367,8 +366,8 @@ if __name__ == "__main__":
 
 		if endchoice < 4:
 			print("Would you like to view the results again?")
-			print("1. View Rosters and Results here")
-			print("2. View Rosters and Results in Web Browser")
+			print("1. View Results here")
+			print("2. View Results in Web Browser")
 			print("3. View Both")
 			print("4. End Program")
 			endchoice = inputCheck("Select an option  ", 1, 4)

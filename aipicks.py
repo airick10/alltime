@@ -68,7 +68,7 @@ def firstRounds(roll, hitters, pitchers, selected_list, position, avgSalary):
 	if hproll < roll:
 		with open('log.txt', 'a') as file:
 			file.write("**AI LOG** - Hitter Selected" + '\n')
-		playerpool = hitters
+		playerpool = hitters.copy()
 		with open('log.txt', 'a') as file:
 			file.write("**AI LOG** - Best Price" + '\n')
 		#playerpool = alltime_lib.sortList(playerpool, "Price", "H")
@@ -76,7 +76,7 @@ def firstRounds(roll, hitters, pitchers, selected_list, position, avgSalary):
 	else:
 		with open('log.txt', 'a') as file:
 			file.write("**AI LOG** - Pitcher Selected" + '\n')
-		playerpool = pitchers
+		playerpool = pitchers.copy()
 		with open('log.txt', 'a') as file:
 			file.write("**AI LOG** - Best Price" + '\n')
 		#playerpool = alltime_lib.sortList(playerpool, "Price", "P")
@@ -142,7 +142,7 @@ def autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, f
 		logstr = f"**AI LOG** - Hitter Selected ({key_str})"
 		with open('log.txt', 'a') as file:
 			file.write(logstr + '\n')
-		playerpool = hitters
+		playerpool = hitters.copy()
 		rolerandom = random.randrange(100)
 		logstr = f"**AI LOG** - Category: {key_str}"
 		with open('log.txt', 'a') as file:
@@ -161,7 +161,7 @@ def autoSelectHitter(position, hitters, pitchers, selected_list, roundCounter, f
 		logstr = f"**AI LOG** - Pitcher Selected ({key_str})"
 		with open('log.txt', 'a') as file:
 			file.write(logstr + '\n')
-		playerpool = pitchers
+		playerpool = pitchers.copy()
 		rolerandom = random.randrange(100)
 		if rolerandom < 80 and position[1] > 0:
 			with open('log.txt', 'a') as file:
@@ -189,7 +189,7 @@ def autoSelectPitcher(position, hitters, pitchers, selected_list, roundCounter, 
 		logstr = f"**AI LOG** - Pitcher Selected ({key_str})"
 		with open('log.txt', 'a') as file:
 			file.write(logstr + '\n')
-		playerpool = pitchers
+		playerpool = pitchers.copy()
 		rolerandom = random.randrange(100)
 		logstr = f"**AI LOG** - Category: {key_str}"
 		with open('log.txt', 'a') as file:
@@ -216,7 +216,7 @@ def autoSelectPitcher(position, hitters, pitchers, selected_list, roundCounter, 
 		logstr = f"**AI LOG** - Hitter Selected ({key_str})"
 		with open('log.txt', 'a') as file:
 			file.write(logstr + '\n')
-		playerpool = hitters
+		playerpool = hitters.copy()
 		player_to_select = topFourGrabs("H", playerpool, selected_list, position, focus, avgSalary)
 
 	return player_to_select

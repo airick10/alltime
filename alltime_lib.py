@@ -193,10 +193,15 @@ def getDraftLog(league, numteams):
 		for i in range(numteams - 1, -1, -1):
 			draftLog.append(draftOrder[i])
 		rdCounter += 1
+	print("")
+	print("Draft Order (Snake Format)")
+	print("-----------")
+	for i in range(numteams):
+		print(f"{i+1}: {draftLog[i]}")
 	return draftLog
 		
 	
-def viewTeam(league, hitters, pitchers, select):
+def viewTeam(league, hitters, pitchers, select, salaryCap):
 	counter = 0
 	idSelected = False
 	choicearray = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
@@ -205,17 +210,20 @@ def viewTeam(league, hitters, pitchers, select):
 	#Because an array starts at 0, I'm turning record['TeamID'] into an int and subtracting by 1.
 	for record in league:
 		if record['DraftSlot'] == select:
-			print(f"{record['TeamName']}")
+			if salaryCap:
+				salary = int(record['Salary'])
+				print(f"{record['TeamName']} - ${salary:,} left")
+			else:
+				print(f"{record['TeamName']}")
+			print("-----------------")
 			teamid = int(record['TeamID']) - 1	
-	#league[select]['C1']
-	print("")
 	#k = Key, v = Va	
 	for k,v in league[teamid].items():
 		empty_slot = True
-		if k != "TeamID" and k != "DraftSlot" and k != "Human":
-			if k == "TeamName":
-				print(f"{v}")
-				print("-------------")
+		if k != "TeamID" and k != "DraftSlot" and k != "Human" and k != "Salary" and k != "AIFocus":
+			#if k == "TeamName":
+				#print(f"{v}")
+				#print("-------------")
 				
 			if "SP" not in k and "RP" not in k:
 				for player in hitters:
@@ -225,7 +233,10 @@ def viewTeam(league, hitters, pitchers, select):
 						idSelected = True
 						empty_slot = False
 					if idSelected:
-						print(f"{counter}. {k} - {player['FirstName']} {player['LastName']}")
+						if salaryCap:
+							print(f"{counter}. {k} - {player['FirstName']} {player['LastName']}: ${player['Price']:,}")
+						else:
+							print(f"{counter}. {k} - {player['FirstName']} {player['LastName']}")
 					idSelected = False
 							
 			else:
@@ -236,7 +247,10 @@ def viewTeam(league, hitters, pitchers, select):
 						idSelected = True
 						empty_slot = False
 					if idSelected:
-						print(f"{counter}. {k} - {player['FirstName']} {player['LastName']}")
+						if salaryCap:
+							print(f"{counter}. {k} - {player['FirstName']} {player['LastName']}: ${player['Price']:,}")
+						else:
+							print(f"{counter}. {k} - {player['FirstName']} {player['LastName']}")
 					idSelected = False
 
 			if empty_slot and k != "TeamName":
@@ -355,30 +369,36 @@ def viewOtherTeamList(league, numteams, draftSlotNum):
 	return teamchoice[selected_team]
 
 
-def searchPlayer(hitters, pitchers, tryagain):
+def searchPlayer(hitters, pitchers, selected_list, tryagain):
 	if tryagain:
 		search = input("No matches found!  One more try.  Type the name of a player to look for ")
+		while search == "":
+			search = input("Type in a name.  Type the name of a player to look for ")
 	else:
-		search = input("Type the name of a player to look for ")
+		search = input("Type the name of a player to look for.  Only players that have not been drafted will be found! ")
+		while search == "":
+			search = input("Type in a name.  Type the name of a player to look for ")
 	search = search.title()
 	player_list = [0]
 	counter = 1
 	for player in hitters:
 		if 'FirstName' in player and 'LastName' in player:
 			if search in player['FirstName'] or search in player['LastName']:
-				playerid = int(player['ID'])
-				player_list.append(playerid)
-				print(f"{counter}. {player['FirstName']} {player['LastName']}")
-				counter += 1
+				if player['ID'] not in selected_list:
+					playerid = int(player['ID'])
+					player_list.append(playerid)
+					print(f"{counter}. {player['FirstName']} {player['LastName']}")
+					counter += 1
 	for player in pitchers:
 		if 'FirstName' in player and 'LastName' in player:
 			if search in player['FirstName'] or search in player['LastName']:
-				playerid = int(player['ID'])
-				player_list.append(playerid)
-				print(f"{counter}. {player['FirstName']} {player['LastName']}")
-				counter += 1
+				if player['ID'] not in selected_list:
+					playerid = int(player['ID'])
+					player_list.append(playerid)
+					print(f"{counter}. {player['FirstName']} {player['LastName']}")
+					counter += 1
 	if counter > 1:
-		choice = alltimedraft.inputCheck("Select the number for a player you want to see more details of.  Select 0 to go back to the menu.", 0, counter)
+		choice = alltimedraft.inputCheck("Select the number for a player you want to see more details of.  Select 0 to go back to the menu.  ", 0, counter)
 		return player_list[choice]
 	else:
 		return 1
@@ -438,7 +458,7 @@ def playerDetails(hitters, pitchers, playerid, viewOnly):
 		input("Press any key to go back to the Draft Menu")
 		return 0
 	else:
-		draftConfirm = input("Do you wish to draft this player?  Type 'Y' for yes.  Press any key to go back to the Draft Menu")
+		draftConfirm = input("Do you wish to draft this player?  Type 'Y' for yes.  Press any key to go back to the Draft Menu  ")
 		if draftConfirm == "Y" or draftConfirm == "y":
 			print("")
 			return playerid
@@ -603,7 +623,7 @@ def sortListMenu():
 	choice = alltimedraft.inputCheck("Select what stat to sort. Type 0 to ignore and go back. ", 0, 20)
 	match choice:
 		case 0:
-			return "Price"
+			return "None"
 		case 1:
 			return "H"
 		case 2:
@@ -645,7 +665,7 @@ def sortListMenu():
 		case 20:
 			return "WHIP"	
 		case _:
-			return "Price"
+			return "None"
 			
 			
 def sortList(playerpool, sortvalue, type):
@@ -689,9 +709,9 @@ def getDraftPoolList(player, choicearray, counter, playertype, salaryCap):
 	else:
 		position = alltimedraft.posConvert(player['Role'])
 		if salaryCap:
-			print(f"{counter}. {player['FirstName']} {player['LastName']} ({player['Team']}): {player['Throw']}/{position}   {player['W']}-{player['L']} - {player['ERA']} ERA / {player['WHIP']} WHIP - ${player['Price']:,}")
+			print(f"{counter}. {player['FirstName']} {player['LastName']} ({player['Team']}): {player['Throw']}/{position}   ({player['W']}-{player['L']}) - {player['SV']} SV - {player['ERA']} ERA / {player['WHIP']} WHIP - ${player['Price']:,}")
 		else:
-			print(f"{counter}. {player['FirstName']} {player['LastName']} ({player['Team']}): {player['Throw']}/{position}   {player['W']}-{player['L']} - {player['ERA']} ERA / {player['WHIP']} WHIP")
+			print(f"{counter}. {player['FirstName']} {player['LastName']} ({player['Team']}): {player['Throw']}/{position}   ({player['W']}-{player['L']}) - {player['SV']} SV - {player['ERA']} ERA / {player['WHIP']} WHIP")
 		playerid = int(player['ID'])
 		choicearray.append(playerid)
 	return choicearray
@@ -756,10 +776,10 @@ def getDraftPool(hitters, pitchers, type, sortvalue, selected_list, salaryCap):
 			if pitchers[counter]['ID'] not in selected_list:
 				if sortvalue == "Position":
 					if pitchers[counter]['Role'] == position[0]:
-						chiocearray = getDraftPoolList(pitchers[counter], choicearray, listcounter, "P", salaryCap)
+						choicearray = getDraftPoolList(pitchers[counter], choicearray, listcounter, "P", salaryCap)
 						listcounter += 1
 				else:
-					chiocearray = getDraftPoolList(pitchers[counter], choicearray, listcounter, "P", salaryCap)
+					choicearray = getDraftPoolList(pitchers[counter], choicearray, listcounter, "P", salaryCap)
 					listcounter += 1
 			counter += 1
 	
@@ -1042,7 +1062,7 @@ def teamHTML(team, hitters, pitchers, endchoice, salaryCap):
 	pos_ary = ['SP1', 'SP2', 'SP3', 'SP4', 'SP5', 'RP1', 'RP2', 'RP3', 'RP4', 'RP5']
 	htmlcode += f"<table><caption>Pitchers</caption>"
 	htmlcode += "<tr><th>Name</th><th>Position</th><th>Team</th><th>Throw</th><th>Role</th><th>G</th><th>GS</th>"
-	htmlcode += "<th>CG</th><th>W</th><th>L</th><th>SV</th><th>IP</th><th>H</th><th>ER</th><th>HR</th><th>BB</th><th>K</th>"
+	htmlcode += "<th>SHO</th><th>W</th><th>L</th><th>SV</th><th>IP</th><th>H</th><th>ER</th><th>HR</th><th>BB</th><th>K</th>"
 	htmlcode += "<th>ERA</th><th>WHIP</th><th>Price</th></tr>"
 	pitcherheadrow = ["Name","Position","Team","Throw","Role",
 					"G","GS","CG","W","L","SV",
@@ -1055,7 +1075,7 @@ def teamHTML(team, hitters, pitchers, endchoice, salaryCap):
 				player_values = [
 					key, player['Team'],
 					player['Throw'], player['Role'], player['G'], player['GS'],
-					player['CG'], player['W'], player['L'], player['SV'],
+					player['SHO'], player['W'], player['L'], player['SV'],
 					player['IP'], player['H'], player['ER'], player['HR'], player['BB'],
 					player['K'], player['ERA'], player['WHIP'], player['Price']
 					]
@@ -1063,7 +1083,7 @@ def teamHTML(team, hitters, pitchers, endchoice, salaryCap):
 				fullname = player['FirstName'] + " " + player['LastName']
 
 				playerrow = [key,fullname,player['Team'],player['Throw'],player['Role'],
-							player['G'],player['GS'],player['CG'],player['W'],player['L'],player['SV'],
+							player['G'],player['GS'],player['SHO'],player['W'],player['L'],player['SV'],
 							player['IP'],player['H'],player['ER'],player['HR'],player['BB'],player['K'],
 							player['ERA'],player['WHIP'],player['Price']]
 
