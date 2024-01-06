@@ -1,42 +1,39 @@
 # All Time Baseball Draft
-## Intro
 
-This program allows you to draft a all time baseball team of 25 players (15 hitters/10 pitchers).
-At the end of the draft, teams will evaluated against each other using rotisserie baseball style standings.
-The stats used to calcuate are:
+## Introduction
+This program allows you to draft an all-time baseball team consisting of 25 players (15 hitters/10 pitchers). Teams are evaluated using rotisserie baseball style standings based on various statistical categories.
 
-Hitters: Runs, Home Runs, RBI, SB (minus CS), Strikeouts (minus BB), Team OPS, and Team Defense rating
-Pitchers: Wins (minus L), Strikeouts, Shutouts, Saves, Team ERA, Team WHIP
-And also the total Price of the player.
+### Statistical Categories
+- **Hitters**: Runs, Home Runs, RBI, SB (minus CS), Strikeouts (minus BB), Team OPS, and Team Defense rating.
+- **Pitchers**: Wins (minus L), Strikeouts, Shutouts, Saves, Team ERA, Team WHIP.
+- **General**: Total Price of the player.
 
-Standings are determined by ranked order in each category and compiled together for a final total.
+Standings are determined by the ranked order in each category, compiling a final total. Note that counting stats for hitters are fully counted for starters and half for bench players. Pitching staffs composed predominantly of pitchers throwing from one side (with one exception) will incur a 5-point penalty.
 
-Keep in mind, counting stats for hitters (Runs, HR, RBI, etc...) will receive the full amount for starting players
-and only half the amount if the player is on the bench.
+## Usage and Installation
+This program is written in Python and optimized for Python 3.10+.
 
-Also, pitching staffs with all pitchers throwing from one side (with one pitcher exception) will be penalized 5 points.
+### Modules Required
+- `random` (included in Python)
+- `json` (included in Python)
+- `sys` (included in Python)
+- `time` (included in Python)
+- `webbrowser` (optional for web browser results, included in Python)
+- `requests` (requires separate installation)
+- `tabulate` (requires separate installation)
 
-Have fun and good luck!
+### Installation Commands
+Install the necessary modules using the following command:
 
-## Usage and Install
-This program uses Python and runs best on Python 3.10+.
-It also uses a few Python modules you'll need to ensure are installed.
+For pip users:
+```markdown
+pip install tabulate requests
+```
 
-Modules needed are (Only requests and tabulate are needed seperately from Python):
-- random
-- json
-- requests
-- sys
-- time
-- webbrowser (If you want to have a web browser show the results)
-- tabulate
-
-To install request and tabulate, run this command
-> **pip install tabulate requests**
-
-OR
-
-> **python3.10 -m pip install tabulate requests**
+For python 3.10:
+```markdown
+python3.10 -m pip install tabulate requests
+```
 
 
 
