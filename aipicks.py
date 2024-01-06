@@ -47,7 +47,7 @@ def aiSelectSnippet(log, playerpool, selected_list, threshold, defCheck, directi
 	for player in playerpool:
 		#print(player['LastName'])
 		if player['ID'] not in selected_list and check_functions[defCheck](player):
-			if player['Price'] > avgSalary:
+			if player['Price'] > avgSalary or player['Price'] < 600:
 				with open('log.txt', 'a') as file:
 					file.write("**AI LOG** - Salary Fail" + '\n')
 			else:
@@ -289,10 +289,18 @@ def aiSelect(league, hitters, pitchers, selected_list, draftSlotNum, roundCounte
 		if draftSlotNum == team['DraftSlot']:
 			position = eligiblePosition(team)
 			if salaryCap:
-				if (26 - roundCounter) > 0:
-					avgSalary = team['Salary'] / (26 - roundCounter)
+				budget = False
+				if random.randrange(100) < 50 and roundCounter > 7:
+					budget = True
+				if roundCounter > 18 or budget:
+					with open('log.txt', 'a') as file:
+						file.write("**AI LOG** - Salary Budget Pick" + '\n')
+					if (26 - roundCounter) > 0:
+						avgSalary = team['Salary'] / (26 - roundCounter)
+					else:
+						avgSalary = team['Salary']
 				else:
-					avgSalary = team['Salary']
+					avgSalary = 500000
 			else:
 				avgSalary = 500000
 			match team['AIFocus']:

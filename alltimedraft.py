@@ -107,6 +107,27 @@ if __name__ == "__main__":
 	hitters = alltime_lib.gatherPlayers(hittersjsonfile, "H")
 	time.sleep(3)	
 	
+	input("""
+This program allows you to draft a all time team of 25 players (15 hitters/10 pitchers).
+At the end of the draft, teams will evaluated against each other using rotisserie baseball style standings.
+The stats used to calcuate are:
+
+Hitters: Runs, Home Runs, RBI, SB (minus CS), Strikeouts (minus BB), Team OPS, and Team Defense rating
+Pitchers: Wins (minus L), Strikeouts, Shutouts, Saves, Team ERA, Team WHIP
+And also the total Price of the player.
+
+Standings are determined by ranked order in each category and compiled together for a final total.
+
+Keep in mind, counting stats for hitters (Runs, HR, RBI, etc...) will receive the full amount for starting players
+and only half the amount if the player is on the bench.
+
+Also, pitching staffs with all pitchers throwing from one side (with one pitcher exception) will be penalized 5 points.
+
+Have fun and good luck!
+
+Press Enter to continue
+""")
+
 	#Asks how many teams will be drafting.
 	clearScreen()
 	numteams = inputCheck("How many teams? (Max: 30)  ", 1, 30)
@@ -329,6 +350,7 @@ if __name__ == "__main__":
 	returned_html7, standings_dict = alltime_lib.fantasyTable(league, hitters, pitchers, standings_dict, "Price", "P", "Price", numteams)
 	htmlcode = htmlcode + returned_html1 + returned_html2 + returned_html3 + returned_html4 + returned_html5 + returned_html6 + returned_html7
 	htmlcode += "</tr></table><p><hr><p>"
+	standings_dict = alltime_lib.pitcherSideCheck(league, standings_dict, pitchers)
 	standings_dict = dict(sorted(standings_dict.items(), key=lambda item: item[1], reverse=True))
 	htmlcode += "<h3>Complete Standings:</h3><p><ol>"
 	for k,v in standings_dict.items():

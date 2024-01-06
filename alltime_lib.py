@@ -698,23 +698,32 @@ def sortList(playerpool, sortvalue, type):
 
 
 def getDraftPoolList(player, choicearray, counter, playertype, salaryCap):
+	name = player['FirstName'] + " " + player['LastName']
+	price = f"${player['Price']:,}"
 	if playertype == "H":
 		position = alltimedraft.posConvert(player['DP1'])
+		slashline = player['Avg'] + "/" + player['OBP'] + "/" + player['SLG']
 		if salaryCap:
 			print(f"{counter}. {player['FirstName']} {player['LastName']} ({player['Team']}): {player['Bat']}/{position} - {player['Avg']}/{player['OBP']}/{player['SLG']} - ${player['Price']:,}")
+			playerrow = [counter,name,player['Team'],player['Bat'],position,slashline,price]
 		else:
 			print(f"{counter}. {player['FirstName']} {player['LastName']} ({player['Team']}): {player['Bat']}/{position} - {player['Avg']}/{player['OBP']}/{player['SLG']}")
+			playerrow = [counter,name,player['Team'],player['Bat'],position,slashline]
 		playerid = int(player['ID'])
 		choicearray.append(playerid)
 	else:
 		position = alltimedraft.posConvert(player['Role'])
+		wl = str(player['W']) + "-" + str(player['L'])
+		erawhip = player['ERA'] + "/" + player['WHIP']
 		if salaryCap:
 			print(f"{counter}. {player['FirstName']} {player['LastName']} ({player['Team']}): {player['Throw']}/{position}   ({player['W']}-{player['L']}) - {player['SV']} SV - {player['ERA']} ERA / {player['WHIP']} WHIP - ${player['Price']:,}")
+			playerrow = [counter,name,player['Team'],player['Throw'],position,wl,player['SV'],erawhip,price]
 		else:
 			print(f"{counter}. {player['FirstName']} {player['LastName']} ({player['Team']}): {player['Throw']}/{position}   ({player['W']}-{player['L']}) - {player['SV']} SV - {player['ERA']} ERA / {player['WHIP']} WHIP")
+			playerrow = [counter,name,player['Team'],player['Throw'],position,wl,player['SV'],erawhip]
 		playerid = int(player['ID'])
 		choicearray.append(playerid)
-	return choicearray
+	return choicearray, playerrow
 
 
 def getDraftPool(hitters, pitchers, type, sortvalue, selected_list, salaryCap):
@@ -750,39 +759,54 @@ def getDraftPool(hitters, pitchers, type, sortvalue, selected_list, salaryCap):
 			position[0] -= 1
 
 	if type == "H":
+		if salaryCap:
+			table = [["Rank","Name","Team","Bat","Position","Avg/OBP/SLG","Price"]]
+		else:
+			table = [["Rank","Name","Team","Bat","Position","Avg/OBP/SLG"]]
 		#for index, player in enumerate(hitters[:X]):
 		while listcounter < 31 and len(hitters) > counter:	
 			#Look for players who have not been drafted yet
 			if hitters[counter]['ID'] not in selected_list:
+				playerrow = None
 				#POSITION CHECK
 				if sortvalue == "Position" and position[1]:
 					position[0] = str(position[0])
 					if hitters[counter]['DP1'] == position[0]:
-						choicearray = getDraftPoolList(hitters[counter], choicearray, listcounter, "H", salaryCap)
+						choicearray, playerrow = getDraftPoolList(hitters[counter], choicearray, listcounter, "H", salaryCap)
 						listcounter += 1
 				elif sortvalue == "Position" and not position[1]:
 					if hitters[counter]['DP1'] == position[0] or hitters[counter]['DP2'] == position[0] or hitters[counter]['DP3'] == position[0] or hitters[counter]['DP4'] == position[0] or hitters[counter]['DP5'] == position[0] or hitters[counter]['DP6'] == position[0] or hitters[counter]['DP7'] == position[0] or hitters[counter]['DP8'] == position[0]:
-						choicearray = getDraftPoolList(hitters[counter], choicearray, listcounter, "H", salaryCap)
+						choicearray, playerrow = getDraftPoolList(hitters[counter], choicearray, listcounter, "H", salaryCap)
 						listcounter += 1		
 				#IF POSITION CHECK ISN'T SELECTED
 				else:
-					choicearray = getDraftPoolList(hitters[counter], choicearray, listcounter, "H", salaryCap)
+					choicearray, playerrow = getDraftPoolList(hitters[counter], choicearray, listcounter, "H", salaryCap)
 					listcounter += 1
+				if playerrow is not None:
+					table.append(playerrow)
 			counter += 1
 	else:
 		#for index, player in enumerate(pitchers[:X]):
+		if salaryCap:
+			table = [["Rank","Name","Team","Throw","Role","W/L","Saves","ERA/WHIP","Price"]]
+		else:
+			table = [["Rank","Name","Team","Throw","Role","W/L","Saves","ERA/WHIP"]]
 		while listcounter < 31 and len(pitchers) > counter:
 			#Look for players who have not been drafted yet
 			if pitchers[counter]['ID'] not in selected_list:
+				playerrow = None
 				if sortvalue == "Position":
 					if pitchers[counter]['Role'] == position[0]:
-						choicearray = getDraftPoolList(pitchers[counter], choicearray, listcounter, "P", salaryCap)
+						choicearray, playerrow = getDraftPoolList(pitchers[counter], choicearray, listcounter, "P", salaryCap)
 						listcounter += 1
 				else:
-					choicearray = getDraftPoolList(pitchers[counter], choicearray, listcounter, "P", salaryCap)
+					choicearray, playerrow = getDraftPoolList(pitchers[counter], choicearray, listcounter, "P", salaryCap)
 					listcounter += 1
+				if playerrow is not None:
+					table.append(playerrow)
 			counter += 1
 	
+	print(tabulate(table))
 	choice = alltimedraft.inputCheck("Select the number for a player you want to see more details of.  Select 0 to go back to the menu.", 0, 30)
 	return choicearray[choice]
 
@@ -793,6 +817,7 @@ def sortTeamCat(league, hitters, pitchers, cat, type):
 	if cat != "Price":
 		if type == "H":
 			pos_ary = ['C1', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'C2', 'UT1', 'UT2', 'UT3', 'UT4', 'UT5', 'UT6']
+			bench = ['C2', 'UT1', 'UT2', 'UT3', 'UT4', 'UT5', 'UT6']
 			for team in league:
 				for key in pos_ary:
 					for player in hitters:
@@ -805,11 +830,20 @@ def sortTeamCat(league, hitters, pitchers, cat, type):
 								else:
 									TotalCat += int(player['DR1'])
 							elif cat == "SB":
-								TotalCat += player['SB'] - player['CS']
+								if key in bench:
+									TotalCat += round((player['SB'] / 2) - round(player['CS'] / 2))
+								else:
+									TotalCat += player['SB'] - player['CS']
 							elif cat == "K":
-								TotalCat += player['K'] - player['BB']
+								if key in bench:
+									TotalCat += round((player['K'] / 2) - round(player['BB'] / 2))
+								else:
+									TotalCat += player['K'] - player['BB']
 							else:
-								TotalCat += player[cat]
+								if key in bench:
+									TotalCat += round(player[cat] / 2)
+								else:
+									TotalCat += player[cat]
 				if cat == "OPS":
 					TotalCat = TotalCat / 15
 					TotalCat = float("{:.3f}".format(TotalCat))
@@ -1019,6 +1053,27 @@ def inCodeFantasyTable(league, hitters, pitchers, numteams, standings_dict):
 	print("----------------------------------------")
 	print("")
 	print("")
+
+def pitcherSideCheck(league, standings_dict, pitchers):
+	pitch_ary = ['SP1', 'SP2', 'SP3', 'SP4', 'SP5', 'RP1', 'RP2', 'RP3', 'RP4', 'RP5']
+	rightCount = 0
+	leftCount = 0
+	for team in league:
+		for key in pitch_ary:
+			playerid = team[key]
+			for record in pitchers:
+				if playerid == record['ID']:
+					if record['Throw'] == "R":
+						rightCount += 1
+					else:
+						leftCount += 1
+		if rightCount < 2 or leftCount < 2:
+			skey = team['TeamName']
+			standings_dict[skey] -= 5
+		rightCount = 0
+		leftCount = 0
+	return standings_dict
+
 
 
 def teamHTML(team, hitters, pitchers, endchoice, salaryCap):
