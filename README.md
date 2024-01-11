@@ -21,18 +21,19 @@ This program is written in Python and optimized for Python 3.10+.
 - `webbrowser` (optional for web browser results, included in Python)
 - `requests` (requires separate installation)
 - `tabulate` (requires separate installation)
+- `wget` (requires separate installation)
 
 ### Installation Commands
 Install the necessary modules using the following command:
 
 For pip users:
 ```markdown
-pip install tabulate requests
+pip install tabulate requests wget
 ```
 
 For python 3.10:
 ```markdown
-python3.10 -m pip install tabulate requests
+python3.10 -m pip install tabulate requests wget
 ```
 
 
