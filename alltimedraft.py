@@ -7,6 +7,7 @@ import random
 import alltime_lib
 import aipicks
 import webbrowser
+import wget
 
 def clearScreen():
     try:
@@ -94,10 +95,23 @@ if __name__ == "__main__":
 	clearScreen()
 	print("Welcome to the All Time Draft!  Gathering players...")
 	#Takes in the file either submitted by the user or the default.  TO DO
-	#pitchersjsonfile = "/Users/eric/Library/Mobile Documents/iCloud~com~omz-software~Pythonista3/Documents/pythonista/Alltimeapp/pitchers.json"
-	#hittersjsonfile = "/Users/eric/Library/Mobile Documents/iCloud~com~omz-software~Pythonista3/Documents/pythonista/Alltimeapp/hitters.json"
 	pitchersjsonfile = 'pitchers.json'
 	hittersjsonfile = 'hitters.json'
+	if not os.path.exists(pitchersjsonfile):
+		url = 'http://www.rontoe.com/pitchers.json'
+		output_path = 'pitchers.json'
+		try:
+			pitchersjsonfile = wget.download(url, out=output_path)
+		except Exception as e:
+			print(f"File Download Error: {e}")
+	if not os.path.exists(hittersjsonfile):
+		url = 'http://www.rontoe.com/hitters.json'
+		output_path = 'hitters.json'
+		try:
+			hittersjsonfile = wget.download(url, out=output_path)
+		except Exception as e:
+			print(f"File Download Error: {e}")
+
 	selected_list = []
 	
 	#Calls two functions.  gatherPitchers and gatherHitters.  Takes the string of the file location
